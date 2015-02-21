@@ -136,16 +136,13 @@ public class VirtueTransformer {
 			if (option.startsWith("-t_mode")) {
 				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-d_mode")) {
-				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
+				instance.setDecompileMode(DecompileMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-secret")) {
 				instance.setSecret(option.substring(8));
 			} else if (option.startsWith("-vector")) {
 				instance.setVector(option.substring(8));
 			}
 		}
-		
-		System.out.println(instance.getSecret());
-		System.out.println(instance.getVector());
 		
 		instance.getTransformers().add(new ClassNameTransformer(true));
 		instance.getTransformers().add(new ClassNameTransformer(false));
@@ -158,6 +155,7 @@ public class VirtueTransformer {
 	 */
 	private void process() {
 		while (isRunning()) {
+			System.out.println(getTransformMode().toString());
 			switch (getTransformMode()) {
 			case OBFUSCATE:
 
@@ -176,7 +174,7 @@ public class VirtueTransformer {
 				}
 				
 				try {
-					setGamepackEncryption(new GamepackEncryption(getSecret(), getVector()));
+					setGamepackEncryption(new GamepackEncryption());
 					getGamepackEncryption().encrypt();
 				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | IOException e) {
 					logger.error("Error encrypting gamepack!", e);
