@@ -19,21 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.transformers;
+package org.virtue.transformers.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.virtue.Mode;
+import org.virtue.transformers.Transformer;
 
 /**
  * @author Kyle Friz
  * @since Feb 20, 2015
  */
-public interface Transformer {
+public class ClassNameTransformer implements Transformer {
 
-	public void initialization();
+	/**
+	 * The {@link Logger} instance
+	 */
+	private static Logger logger = LoggerFactory.getLogger(ClassNameTransformer.class);
 
-	public void transform();
+	private boolean obfuscation;
+	
+	public ClassNameTransformer(boolean obf) {
+		this.obfuscation = obf;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.virtue.transformers.Transformer#initialize()
+	 */
+	public void initialization() {
+		// TODO Auto-generated method stub
 
-	public void finalization();
+	}
 
-	public Mode getMode();
+	/* (non-Javadoc)
+	 * @see org.virtue.transformers.Transformer#transform()
+	 */
+	public void transform() {
+		// TODO Auto-generated method stub
+
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see org.virtue.transformers.Transformer#finalization()
+	 */
+	public void finalization() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.virtue.transformers.Transformer#getMode()
+	 */
+	public Mode getMode() {
+		return obfuscation ? Mode.OBFUSCATE : Mode.DEOBFUSCATE;
+	}
 }

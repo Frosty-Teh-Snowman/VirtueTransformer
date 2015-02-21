@@ -21,8 +21,15 @@
  */
 package org.virtue;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.transformers.Transformer;
+import org.virtue.transformers.impl.ClassNameTransformer;
 
 /**
  * @author Kyle Friz
@@ -34,44 +41,52 @@ public class VirtueTransformer {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(VirtueTransformer.class);
-	
+
 	/**
 	 * The instance of the transformer
 	 */
 	private static VirtueTransformer instance;
-	
+
 	/**
 	 * The start time of execution
 	 */
 	private long startTime;
-	
+
 	/**
 	 * If the current execution should still be running
 	 */
 	private boolean running;
-	
+
 	/**
 	 * The current mode
 	 */
 	private Mode mode;
-	
-	
+
+	/**
+	 * The list of transformers
+	 */
+	private List<Transformer> transformers = Collections.synchronizedList(new ArrayList<Transformer>());
+
 	public VirtueTransformer(Mode mode) {
 		this.mode = mode;
 	}
-	
-	public static void main(String[] args) throws Exception{
+
+	public static void main(String[] args) throws Exception {
 		if (args.length < 1)
 			throw new IllegalArgumentException("Invalid Runtime Arguments! Usuage: int(Mode)");
-		
+
 		Mode mode = Mode.valueOf(Integer.parseInt(args[0]));
-		
+
 		instance = new VirtueTransformer(mode);
 		instance.setStartTime(System.currentTimeMillis());
+		
+		instance.getTransformers().add(new ClassNameTransformer(true));
+		instance.getTransformers().add(new ClassNameTransformer(false));
+		
 		instance.setRunning(true);
 		instance.process();
 	}
-	
+
 	/**
 	 * Processes the main thread
 	 */
@@ -81,6 +96,18 @@ public class VirtueTransformer {
 			switch (mode) {
 			case OBFUSCATE:
 				/* TODO: Obfuscate a jar */
+				synchronized (transformers) {
+					Iterator<Transformer> trans = transformers.iterator();
+					while (trans.hasNext()) {
+						Transformer transformer = trans.next();
+						if (transformer.getMode().equals(Mode.OBFUSCATE)) {
+							transformer.initialization();
+							transformer.transform();
+							transformer.finalization();
+							// trans.remove();
+						}
+					}
+				}
 				setMode(Mode.FINALIZE);
 				break;
 			case GRAB:
@@ -92,10 +119,34 @@ public class VirtueTransformer {
 				setMode(Mode.DEOBFUSCATE);
 				break;
 			case DEOBFUSCATE:
+				synchronized (transformers) {
+					Iterator<Transformer> trans = transformers.iterator();
+					while (trans.hasNext()) {
+						Transformer transformer = trans.next();
+						if (transformer.getMode().equals(Mode.DEOBFUSCATE)) {
+							transformer.initialization();
+							transformer.transform();
+							transformer.finalization();
+							// trans.remove();
+						}
+					}
+				}
 				/* TODO: Deobfuscate a jar */
 				setMode(Mode.DECOMPILE);
 				break;
 			case DECOMPILE:
+				synchronized (transformers) {
+					Iterator<Transformer> trans = transformers.iterator();
+					while (trans.hasNext()) {
+						Transformer transformer = trans.next();
+						if (transformer.getMode().equals(Mode.DECOMPILE)) {
+							transformer.initialization();
+							transformer.transform();
+							transformer.finalization();
+							// trans.remove();
+						}
+					}
+				}
 				/* TODO: Decompile a jar */
 				setMode(Mode.FINALIZE);
 				break;
@@ -111,6 +162,7 @@ public class VirtueTransformer {
 
 	/**
 	 * Grabs the instance of the transformer
+	 * 
 	 * @return the instance
 	 */
 	public static VirtueTransformer getInstance() {
@@ -119,6 +171,7 @@ public class VirtueTransformer {
 
 	/**
 	 * Grabs the current mode
+	 * 
 	 * @return the mode
 	 */
 	public Mode getMode() {
@@ -127,7 +180,9 @@ public class VirtueTransformer {
 
 	/**
 	 * Sets the current mode
-	 * @param mode the mode to set
+	 * 
+	 * @param mode
+	 *            the mode to set
 	 */
 	public void setMode(Mode mode) {
 		this.mode = mode;
@@ -141,7 +196,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param startTime the startTime to set
+	 * @param startTime
+	 *            the startTime to set
 	 */
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
@@ -155,9 +211,17 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param running the running to set
+	 * @param running
+	 *            the running to set
 	 */
 	public void setRunning(boolean running) {
 		this.running = running;
+	}
+
+	/**
+	 * @return the transformers
+	 */
+	public List<Transformer> getTransformers() {
+		return transformers;
 	}
 }

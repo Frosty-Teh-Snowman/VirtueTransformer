@@ -28,41 +28,41 @@ package org.virtue;
  */
 public enum Mode {
 
-	
 	/**
 	 * Represents the mode of obfuscating bytecode
 	 */
 	OBFUSCATE,
-	
+
 	/**
 	 * Represents the mode of grabbing the gamepack from the web
 	 */
 	GRAB,
-	
+
 	/**
 	 * Represents the mode of decrypting AES Pack200 archives
 	 */
 	DECRYPT,
-	
-	
+
 	/**
 	 * Represents the mode of deobfuscating bytecode
 	 */
 	DEOBFUSCATE,
-	
+
 	/**
 	 * Represents the mode of decompiling bytecode
 	 */
-	DECOMPILE, 
-	
+	DECOMPILE,
+
 	/**
 	 * Represents the mode of finalizing
 	 */
 	FINALIZE;
-	
+
 	/**
 	 * Grabs the omde for the specified value
-	 * @param val The value
+	 * 
+	 * @param val
+	 *            The value
 	 * @return
 	 */
 	public static Mode valueOf(int val) {
