@@ -19,59 +19,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.transformers.impl;
+package org.virtue.cryption;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.virtue.TransformMode;
-import org.virtue.transformers.Transformer;
 
 /**
+ * @author Major
  * @author Kyle Friz
- * @since Feb 20, 2015
  */
-public class ClassNameTransformer implements Transformer {
+public class CryptionConstants {
 
 	/**
-	 * The {@link Logger} instance
+	 * The size of the buffer used when decrypting the {@code inner.pack.gz} archive, in bytes.
 	 */
-	private static Logger logger = LoggerFactory.getLogger(ClassNameTransformer.class);
+	public static final int BUFFER_SIZE = 0x500000;
 
-	private boolean obfuscation;
-	
-	public ClassNameTransformer(boolean obf) {
-		this.obfuscation = obf;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#initialize()
+	/**
+	 * The name of the archive containing the client.
 	 */
-	public void initialization() {
-		// TODO Auto-generated method stub
+	public static final String ENCRYPTED_ARCHIVE_NAME = "inner.pack.gz";
 
-	}
-
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#transform()
-	 */
-	public void transformation() {
-		// TODO Auto-generated method stub
-
-	}
-	
-
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#finalization()
-	 */
-	public void finalization() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#getMode()
-	 */
-	public TransformMode getMode() {
-		return obfuscation ? TransformMode.OBFUSCATE : TransformMode.DEOBFUSCATE;
-	}
 }

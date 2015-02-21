@@ -26,7 +26,7 @@ package org.virtue;
  * @author Kyle Friz
  * @since Feb 20, 2015
  */
-public enum Mode {
+public enum TransformMode {
 
 	/**
 	 * Represents the mode of obfuscating bytecode
@@ -59,13 +59,13 @@ public enum Mode {
 	FINALIZE;
 
 	/**
-	 * Grabs the omde for the specified value
+	 * Grabs the mode for the specified value
 	 * 
 	 * @param val
 	 *            The value
-	 * @return
+	 * @return	  The mode
 	 */
-	public static Mode valueOf(int val) {
+	public static TransformMode valueOf(int val) {
 		switch (val) {
 		case 0:
 			return OBFUSCATE;

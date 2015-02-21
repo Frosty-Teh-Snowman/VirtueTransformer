@@ -19,59 +19,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.transformers.impl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.virtue.TransformMode;
-import org.virtue.transformers.Transformer;
+package org.virtue.decompile;
 
 /**
  * @author Kyle Friz
- * @since Feb 20, 2015
+ * @since Feb 21, 2015
  */
-public class ClassNameTransformer implements Transformer {
+public enum DecompileMode {
 
 	/**
-	 * The {@link Logger} instance
+	 * Represents decompilation should use the JODE Decompiler 
+	 * NOTE: JODE Fails to decompile one class, and also messes up another class (Choppy Items)
 	 */
-	private static Logger logger = LoggerFactory.getLogger(ClassNameTransformer.class);
+	JODE,
 
-	private boolean obfuscation;
-	
-	public ClassNameTransformer(boolean obf) {
-		this.obfuscation = obf;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#initialize()
+	/**
+	 * Represents decompilation should use the CFR Decompiler 
+	 * NOTE: CFR is still in development, so it will fail to decompile many classes
 	 */
-	public void initialization() {
-		// TODO Auto-generated method stub
+	CFR,
 
-	}
-
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#transform()
+	/**
+	 * Represents decompilation should use the Fernflower Decompiler 
+	 * NOTE: Fernflower is an pretty good decompile, should use this to decompile the class that JODE messes up (Choppy Items)
 	 */
-	public void transformation() {
-		// TODO Auto-generated method stub
+	FERNFLOWER,
 
-	}
-	
-
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#finalization()
+	/**
+	 * Represents decompilation should use the Procyon Decompiler 
+	 * NOTE: Procyon is still in development, so it will fail to decompile some classes
 	 */
-	public void finalization() {
-		// TODO Auto-generated method stub
-		
+	PROCYON;
+
+	/**
+	 * Grabs the mode for the specified value
+	 * 
+	 * @param val
+	 *            The value
+	 * @return 	  The mode
+	 */
+	public static DecompileMode valueOf(int val) {
+		switch (val) {
+		case 0:
+			return JODE;
+		case 1:
+			return CFR;
+		case 2:
+			return FERNFLOWER;
+		case 3:
+			return PROCYON;
+		}
+		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.virtue.transformers.Transformer#getMode()
-	 */
-	public TransformMode getMode() {
-		return obfuscation ? TransformMode.OBFUSCATE : TransformMode.DEOBFUSCATE;
-	}
 }

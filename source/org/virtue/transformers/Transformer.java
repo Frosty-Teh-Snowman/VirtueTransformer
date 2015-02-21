@@ -21,7 +21,7 @@
  */
 package org.virtue.transformers;
 
-import org.virtue.Mode;
+import org.virtue.TransformMode;
 
 /**
  * @author Kyle Friz
@@ -31,9 +31,9 @@ public interface Transformer {
 
 	public void initialization();
 
-	public void transform();
+	public void transformation();
 
 	public void finalization();
 
-	public Mode getMode();
+	public TransformMode getMode();
 }

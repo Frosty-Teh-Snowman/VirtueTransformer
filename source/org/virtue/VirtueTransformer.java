@@ -21,13 +21,24 @@
  */
 package org.virtue;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.cryption.GamepackDecryption;
+import org.virtue.cryption.GamepackEncryption;
+import org.virtue.decompile.DecompileMode;
 import org.virtue.transformers.Transformer;
 import org.virtue.transformers.impl.ClassNameTransformer;
 
@@ -58,39 +69,87 @@ public class VirtueTransformer {
 	private boolean running;
 
 	/**
-	 * The current mode
+	 * The working directory
 	 */
-	private Mode mode;
+	private String directory;
+	
+	/**
+	 * The current transform mode
+	 */
+	private TransformMode transform_mode;
+
+	/**
+	 * The current decompile mode
+	 */
+	private DecompileMode decompile_mode;
+
+	/**
+	 * The Secret AES Key (Parameter: "0");
+	 */
+	private String secret;
+
+	/**
+	 * The Vector AES Key (Parameter: "-1")
+	 */
+	private String vector;
 
 	/**
 	 * The list of transformers
 	 */
-	private List<Transformer> transformers = Collections.synchronizedList(new ArrayList<Transformer>());
-	
+	private List<Transformer> transformers;
+
 	/**
 	 * The module for holding classes
 	 */
 	private ClassModule module;
+	
+	/**
+	 * The Gamepack decrytor
+	 */
+	private GamepackDecryption g_decrypt;
+	
+	/**
+	 * The Gamepack encryptor
+	 */
+	private GamepackEncryption g_encrypt;
 
-	public VirtueTransformer(Mode mode) {
-		this.mode = mode;
+	public VirtueTransformer() {
+		this.transform_mode = TransformMode.GRAB;
+		this.decompile_mode = DecompileMode.JODE;
+		this.module = new ClassModule();
+		this.startTime = System.currentTimeMillis();
+		this.running = true;
+		this.transformers = Collections.synchronizedList(new ArrayList<Transformer>());
 	}
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 1)
-			throw new IllegalArgumentException("Invalid Runtime Arguments! Usuage: int(Mode)");
-
-		Mode mode = Mode.valueOf(Integer.parseInt(args[0]));
-
-		instance = new VirtueTransformer(mode);
-		instance.setStartTime(System.currentTimeMillis());
+		if (args.length < 1) {
+			System.err.println("Usage: java -jar VirtueTransformer.jar -t_mode=<value> [-<option>=<value>]*");
+			System.err.println("Example: java -jar VirtueTransformer.jar -t_mode=2 -d_mode=2 -secret=aqmjTcXEDoe9a8BekbE3iw -vector=VPuc*5PB7oliknJVXdVDPw");
+			System.err.println();
+			throw new IllegalArgumentException("Invalid Runtime Arguments!");
+		}
 		
-		instance.setModule(new ClassModule());
+		instance = new VirtueTransformer();
+
+		for (String option : args) {
+			if (option.startsWith("-t_mode")) {
+				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
+			} else if (option.startsWith("-d_mode")) {
+				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
+			} else if (option.startsWith("-secret")) {
+				instance.setSecret(option.substring(8));
+			} else if (option.startsWith("-vector")) {
+				instance.setVector(option.substring(8));
+			}
+		}
+		
+		System.out.println(instance.getSecret());
+		System.out.println(instance.getVector());
 		
 		instance.getTransformers().add(new ClassNameTransformer(true));
 		instance.getTransformers().add(new ClassNameTransformer(false));
-		
-		instance.setRunning(true);
+
 		instance.process();
 	}
 
@@ -99,79 +158,79 @@ public class VirtueTransformer {
 	 */
 	private void process() {
 		while (isRunning()) {
-			logger.info(mode.toString());
-			switch (mode) {
+			switch (getTransformMode()) {
 			case OBFUSCATE:
-				/* TODO: Obfuscate a jar */
-				
+
 				getModule().initialization("./obf/original.jar");
-				
+
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
 					while (trans.hasNext()) {
 						Transformer transformer = trans.next();
-						if (transformer.getMode().equals(Mode.OBFUSCATE)) {
+						if (transformer.getMode().equals(TransformMode.OBFUSCATE)) {
 							transformer.initialization();
-							transformer.transform();
+							transformer.transformation();
 							transformer.finalization();
-							// trans.remove();
 						}
 					}
 				}
-				setMode(Mode.FINALIZE);
+				
+				try {
+					setGamepackEncryption(new GamepackEncryption(getSecret(), getVector()));
+					getGamepackEncryption().encrypt();
+				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | IOException e) {
+					logger.error("Error encrypting gamepack!", e);
+				}
+				
+				/* TODO: Obfuscate a jar */
+				setTransformMode(TransformMode.FINALIZE);
 				break;
 			case GRAB:
 				/* TODO: Grab the gamepack */
-				setMode(Mode.DECRYPT);
+				setTransformMode(TransformMode.DECRYPT);
 				break;
 			case DECRYPT:
-				
-				getModule().initialization("./deob/gamepack.jar");
+
+				try {
+					setGamepackDecryption(new GamepackDecryption(getSecret(), getVector()));
+					getGamepackDecryption().decrypt();
+				} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+					logger.error("Error decrypting gamepack!", e);
+				}
 				
 				/* TODO: Decrypt the gamepack */
-				setMode(Mode.DEOBFUSCATE);
+				setTransformMode(TransformMode.DEOBFUSCATE);
 				break;
 			case DEOBFUSCATE:
-				
-				getModule().initialization("./deob/decrypted.jar");
-				
+
+				getModule().initialization("./de_obf/decrypted.jar");
+
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
 					while (trans.hasNext()) {
 						Transformer transformer = trans.next();
-						if (transformer.getMode().equals(Mode.DEOBFUSCATE)) {
+						if (transformer.getMode().equals(TransformMode.DEOBFUSCATE)) {
 							transformer.initialization();
-							transformer.transform();
+							transformer.transformation();
 							transformer.finalization();
-							// trans.remove();
 						}
 					}
 				}
+				
 				/* TODO: Deobfuscate a jar */
-				setMode(Mode.DECOMPILE);
+				setTransformMode(TransformMode.DECOMPILE);
 				break;
 			case DECOMPILE:
+
+			//	getModule().initialization("./de_obf/deobfuscated.jar");
 				
-				getModule().initialization("./obf/deobfuscated.jar");
-				
-				synchronized (transformers) {
-					Iterator<Transformer> trans = transformers.iterator();
-					while (trans.hasNext()) {
-						Transformer transformer = trans.next();
-						if (transformer.getMode().equals(Mode.DECOMPILE)) {
-							transformer.initialization();
-							transformer.transform();
-							transformer.finalization();
-							// trans.remove();
-						}
-					}
-				}
 				/* TODO: Decompile a jar */
-				setMode(Mode.FINALIZE);
+				setTransformMode(TransformMode.FINALIZE);
 				break;
 			case FINALIZE:
 				/* TODO: Finalize the execution */
 				setRunning(false);
+				logger.info("Finished Running VirtueTransformer!");
 				break;
 			default:
 				break;
@@ -189,12 +248,12 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * Grabs the current mode
+	 * Grabs the current transform mode
 	 * 
 	 * @return the mode
 	 */
-	public Mode getMode() {
-		return mode;
+	public TransformMode getTransformMode() {
+		return transform_mode;
 	}
 
 	/**
@@ -203,8 +262,27 @@ public class VirtueTransformer {
 	 * @param mode
 	 *            the mode to set
 	 */
-	public void setMode(Mode mode) {
-		this.mode = mode;
+	public void setTransformMode(TransformMode mode) {
+		this.transform_mode = mode;
+	}
+
+	/**
+	 * Grabs the current decompile mode
+	 * 
+	 * @return the mode
+	 */
+	public DecompileMode getDecompileMode() {
+		return decompile_mode;
+	}
+	
+	/**
+	 * Sets the current mode
+	 * 
+	 * @param mode
+	 *            the mode to set
+	 */
+	public void setDecompileMode(DecompileMode mode) {
+		this.decompile_mode = mode;
 	}
 
 	/**
@@ -215,18 +293,24 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param startTime
-	 *            the startTime to set
-	 */
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
-
-	/**
 	 * @return the running
 	 */
 	public boolean isRunning() {
 		return running;
+	}
+
+	/**
+	 * @return the directory
+	 */
+	public String getDirectory() {
+		return directory;
+	}
+
+	/**
+	 * @param directory the directory to set
+	 */
+	public void setDirectory(String directory) {
+		this.directory = directory;
 	}
 
 	/**
@@ -252,9 +336,60 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param module the module to set
+	 * @return the secret
 	 */
-	public void setModule(ClassModule module) {
-		this.module = module;
+	public String getSecret() {
+		return secret;
+	}
+
+	/**
+	 * @param secret
+	 *            the secret to set
+	 */
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
+
+	/**
+	 * @return the vector
+	 */
+	public String getVector() {
+		return vector;
+	}
+
+	/**
+	 * @param vector
+	 *            the vector to set
+	 */
+	public void setVector(String vector) {
+		this.vector = vector;
+	}
+
+	/**
+	 * @return the g_decrypt
+	 */
+	public GamepackDecryption getGamepackDecryption() {
+		return g_decrypt;
+	}
+
+	/**
+	 * @param g_decrypt the g_decrypt to set
+	 */
+	public void setGamepackDecryption(GamepackDecryption g_decrypt) {
+		this.g_decrypt = g_decrypt;
+	}
+
+	/**
+	 * @return the g_encrypt
+	 */
+	public GamepackEncryption getGamepackEncryption() {
+		return g_encrypt;
+	}
+
+	/**
+	 * @param g_encrypt the g_encrypt to set
+	 */
+	public void setGamepackEncryption(GamepackEncryption g_encrypt) {
+		this.g_encrypt = g_encrypt;
 	}
 }
