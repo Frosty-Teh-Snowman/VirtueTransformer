@@ -66,6 +66,11 @@ public class VirtueTransformer {
 	 * The list of transformers
 	 */
 	private List<Transformer> transformers = Collections.synchronizedList(new ArrayList<Transformer>());
+	
+	/**
+	 * The module for holding classes
+	 */
+	private ClassModule module;
 
 	public VirtueTransformer(Mode mode) {
 		this.mode = mode;
@@ -79,6 +84,8 @@ public class VirtueTransformer {
 
 		instance = new VirtueTransformer(mode);
 		instance.setStartTime(System.currentTimeMillis());
+		
+		instance.setModule(new ClassModule());
 		
 		instance.getTransformers().add(new ClassNameTransformer(true));
 		instance.getTransformers().add(new ClassNameTransformer(false));
@@ -96,6 +103,9 @@ public class VirtueTransformer {
 			switch (mode) {
 			case OBFUSCATE:
 				/* TODO: Obfuscate a jar */
+				
+				getModule().initialization("./obf/original.jar");
+				
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
 					while (trans.hasNext()) {
@@ -115,10 +125,16 @@ public class VirtueTransformer {
 				setMode(Mode.DECRYPT);
 				break;
 			case DECRYPT:
+				
+				getModule().initialization("./deob/gamepack.jar");
+				
 				/* TODO: Decrypt the gamepack */
 				setMode(Mode.DEOBFUSCATE);
 				break;
 			case DEOBFUSCATE:
+				
+				getModule().initialization("./deob/decrypted.jar");
+				
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
 					while (trans.hasNext()) {
@@ -135,6 +151,9 @@ public class VirtueTransformer {
 				setMode(Mode.DECOMPILE);
 				break;
 			case DECOMPILE:
+				
+				getModule().initialization("./obf/deobfuscated.jar");
+				
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
 					while (trans.hasNext()) {
@@ -223,5 +242,19 @@ public class VirtueTransformer {
 	 */
 	public List<Transformer> getTransformers() {
 		return transformers;
+	}
+
+	/**
+	 * @return the module
+	 */
+	public ClassModule getModule() {
+		return module;
+	}
+
+	/**
+	 * @param module the module to set
+	 */
+	public void setModule(ClassModule module) {
+		this.module = module;
 	}
 }
