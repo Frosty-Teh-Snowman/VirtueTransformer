@@ -36,9 +36,11 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.virtue.cryption.GamepackDecryption;
-import org.virtue.cryption.GamepackEncryption;
+import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
+import org.virtue.gamepack.ConfigCrawler;
+import org.virtue.gamepack.cryption.GamepackDecryption;
+import org.virtue.gamepack.cryption.GamepackEncryption;
 import org.virtue.transformers.Transformer;
 import org.virtue.transformers.impl.ClassNameTransformer;
 
@@ -82,14 +84,26 @@ public class VirtueTransformer {
 	 * The current decompile mode
 	 */
 	private DecompileMode decompile_mode;
+	
+	/**
+	 * The bytecode decompiler
+	 */
+	private BytecodeDecompiler decompiler;
+	
+	/**
+	 * The config crawler, which grabs parameters
+	 */
+	private ConfigCrawler crawler;
 
 	/**
 	 * The Secret AES Key (Parameter: "0");
+	 * NOTE: Only used for decypting a gamepack
 	 */
 	private String secret;
 
 	/**
 	 * The Vector AES Key (Parameter: "-1")
+	 * NOTE: Only used for decypting a gamepack
 	 */
 	private String vector;
 
@@ -116,6 +130,8 @@ public class VirtueTransformer {
 	public VirtueTransformer() {
 		this.transform_mode = TransformMode.GRAB;
 		this.decompile_mode = DecompileMode.JODE;
+		this.crawler = new ConfigCrawler();
+		this.decompiler = new BytecodeDecompiler();
 		this.module = new ClassModule();
 		this.startTime = System.currentTimeMillis();
 		this.running = true;
@@ -132,6 +148,12 @@ public class VirtueTransformer {
 		
 		instance = new VirtueTransformer();
 
+		/**
+		 * -t_mode= sets the transformation mode (Which stage should the program start at)
+		 * -d_mode= sets the decompile mode (Which decompiler should the program use)
+		 * -secret= sets the secret key for decrypting the gamepack (Only used when not grabbing the current rs gamepack)
+		 * -vector= sets the initialization vector for dercypting the gamepack (Only used when not grabbing the current rs gamepack)
+		 */
 		for (String option : args) {
 			if (option.startsWith("-t_mode")) {
 				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
@@ -184,6 +206,14 @@ public class VirtueTransformer {
 				setTransformMode(TransformMode.FINALIZE);
 				break;
 			case GRAB:
+				try {
+					getCrawler().crawl();
+					getCrawler().download();
+					setSecret(getCrawler().getParameters().get("0"));
+					setVector(getCrawler().getParameters().get("-1"));
+				} catch (IOException e) {
+					logger.error("Error crawling configs!", e);
+				}
 				/* TODO: Grab the gamepack */
 				setTransformMode(TransformMode.DECRYPT);
 				break;
@@ -220,7 +250,11 @@ public class VirtueTransformer {
 				break;
 			case DECOMPILE:
 
-			//	getModule().initialization("./de_obf/deobfuscated.jar");
+				try {
+					getDecompiler().decompile();
+				} catch (Exception e) {
+					logger.error("Error Decompiling!", e);
+				}
 				
 				/* TODO: Decompile a jar */
 				setTransformMode(TransformMode.FINALIZE);
@@ -284,6 +318,13 @@ public class VirtueTransformer {
 	}
 
 	/**
+	 * @return the crawler
+	 */
+	public ConfigCrawler getCrawler() {
+		return crawler;
+	}
+
+	/**
 	 * @return the startTime
 	 */
 	public long getStartTime() {
@@ -333,6 +374,13 @@ public class VirtueTransformer {
 		return module;
 	}
 
+	/**
+	 * @return the decompiler
+	 */
+	public BytecodeDecompiler getDecompiler() {
+		return decompiler;
+	}
+	
 	/**
 	 * @return the secret
 	 */

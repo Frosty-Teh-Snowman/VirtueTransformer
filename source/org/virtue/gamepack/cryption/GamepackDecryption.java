@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.cryption;
+package org.virtue.gamepack.cryption;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,13 +29,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -92,7 +89,6 @@ public class GamepackDecryption {
 	/**
 	 * Creates the inner pack decrypter.
 	 * 
-	 * @param gamepack The {@link Path} to the gamepack jar.
 	 * @param secret The encoded secret key.
 	 * @param vector The encoded initialisation vector.
 	 * @throws IOException If the path to the gamepack is invalid.
@@ -109,8 +105,6 @@ public class GamepackDecryption {
 	/**
 	 * Decrypts the {@code inner.pack.gz} archive using the AES cipher. The
 	 * decrypted data is then un-gzipped and unpacked from the pack200 format,
-	 * before finally being split into a {@link ByteBuffer} per class. The data
-	 * is then returned as a {@link Map} of class names to byte buffers.
 	 * 
 	 * @return The map of class names to the byte buffers containing their data.
 	 * @throws NoSuchAlgorithmException
@@ -130,11 +124,8 @@ public class GamepackDecryption {
 	 *             If the data lacks the appropriate padding bytes.
 	 */
 	public void decrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException, BadPaddingException {
-		int secretKeySize = getKeySize(encodedSecret.length());
-		int vectorSize = getKeySize(encodedVector.length());
-
-		byte[] secretKey = secretKeySize == 0 ? EMPTY_KEY : decodeBase64(encodedSecret, secretKeySize);
-		byte[] vectorKey = vectorSize == 0 ? EMPTY_KEY : decodeBase64(encodedVector, vectorSize);
+		byte[] secretKey = encodedSecret.length() == 0 ? EMPTY_KEY : decodeBase64(encodedSecret);
+		byte[] vectorKey = encodedVector.length() == 0 ? EMPTY_KEY : decodeBase64(encodedVector);
 		
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKeySpec secret = new SecretKeySpec(secretKey, "AES");
@@ -167,6 +158,8 @@ public class GamepackDecryption {
 		try (BufferedOutputStream jos = new BufferedOutputStream(new FileOutputStream(file))) {
 			jos.write(bos.toByteArray());
 		}
+		jar.close();
+		input.close();
 		logger.info("Decrypted inner.pack.gz!");
 	}
 
@@ -174,30 +167,14 @@ public class GamepackDecryption {
 	 * Decodes the base64 string into a valid secret key or initialization vector.
 	 * 
 	 * @param string
-	 *            The string.
-	 * @param size
-	 *            The size of the key, in bytes.
+	 *            The key.
 	 * @return The key, as a byte array.
 	 */
-	private byte[] decodeBase64(String string, int size) {
+	private byte[] decodeBase64(String string) {
 		/* JaGex's implementation uses * and - instead of + and /, so replace them. */
 		String valid = string.replaceAll("\\*", "\\+").replaceAll("-", "/");
 
 		Base64.Decoder base64 = Base64.getDecoder();
 		return base64.decode(valid);
-	}
-
-	/**
-	 * Gets the key size for a string of the specified length.
-	 * 
-	 * @param length
-	 *            The length of the string.
-	 * @return The key size.
-	 */
-	private int getKeySize(int length) {
-		if (length == 0) {
-			return 0;
-		}
-		return 3 * (int) Math.floor((length - 1) / 4) + 1;
 	}
 }

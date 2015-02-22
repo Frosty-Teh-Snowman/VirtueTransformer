@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.cryption;
+package org.virtue.gamepack.cryption;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,13 +30,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Pack200;
 import java.util.zip.GZIPOutputStream;
@@ -55,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Kyle Friz
+ * @author Major
  * @since Feb 21, 2015
  */
 public class GamepackEncryption {
@@ -80,10 +79,8 @@ public class GamepackEncryption {
 	}
 	
 	/**
-	 * Encrypts the {@code inner.pack.gz} archive using the AES cipher. The
-	 * decrypted data is then un-gzipped and unpacked from the pack200 format,
-	 * before finally being split into a {@link ByteBuffer} per class. The data
-	 * is then returned as a {@link Map} of class names to byte buffers.
+	 * Packs a jar using Pack200, then GZIPs it, then uses and AES
+	 * Cipher to encrypt the jar
 	 * 
 	 * @return The map of class names to the byte buffers containing their data.
 	 * @throws NoSuchAlgorithmException
@@ -148,17 +145,16 @@ public class GamepackEncryption {
 		try (BufferedOutputStream jos = new BufferedOutputStream(new FileOutputStream(file))) {
 			jos.write(encrypted);
 		}
+		input.close();
 		logger.info("Encrypted inner.pack.gz!");
 	}
 
 	/**
-	 * Decodes the base64 string into a valid secret key or initialization vector.
+	 * Encodes a byte array into a base64 string
 	 * 
-	 * @param string
-	 *            The string.
-	 * @param size
-	 *            The size of the key, in bytes.
-	 * @return The key, as a byte array.
+	 * @param bytes
+	 *            The key, as a byte array.
+	 * @return The base64 key
 	 */
 	private String encodeBase64(byte[] bytes) {
 		Base64.Encoder base64 = Base64.getEncoder();

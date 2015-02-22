@@ -19,23 +19,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.cryption;
+package org.virtue.decompile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.virtue.VirtueTransformer;
 
 /**
- * @author Major
  * @author Kyle Friz
+ * @since Feb 22, 2015
  */
-public class CryptionConstants {
+public class BytecodeDecompiler {
 
 	/**
-	 * The size of the buffer used when decrypting the {@code inner.pack.gz} archive, in bytes.
+	 * The {@link Logger} instance
 	 */
-	public static final int BUFFER_SIZE = 0x500000;
-
-	/**
-	 * The name of the archive containing the client.
-	 */
-	public static final String ENCRYPTED_ARCHIVE_NAME = "inner.pack.gz";
-
+	private static Logger logger = LoggerFactory.getLogger(BytecodeDecompiler.class);
+	
+	public void decompile() throws Exception {
+		switch (VirtueTransformer.getInstance().getDecompileMode()) {
+		case CFR:
+			org.benf.cfr.reader.Main.main(new String[] { "./de_obf/decrypted.jar", "--outputdir",  "./de_obf/source/" });
+			break;
+		case FERNFLOWER:
+			de.fernflower.main.decompiler.ConsoleDecompiler.main(new String[] { "./de_obf/decrypted.jar",  "./de_obf/source/" });
+			break;
+		case JODE:
+			jode.decompiler.Main.main(new String[] { "--style",  "gnu",  "--dest", "./de_obf/source/", "./de_obf/decrypted.jar" });
+			break;
+		case PROCYON:
+			com.strobel.decompiler.DecompilerDriver.main(new String[] { "-jar", "./de_obf/decrypted.jar", "-o",  "./de_obf/source/" });
+			break;
+		default:
+			break;
+		
+		}
+		logger.info("Decompiled using: " + VirtueTransformer.getInstance().getDecompileMode().toString());
+	}
 }
