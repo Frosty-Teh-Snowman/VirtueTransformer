@@ -21,6 +21,7 @@
  */
 package org.virtue;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
 import org.virtue.gamepack.ConfigCrawler;
+import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
 import org.virtue.gamepack.cryption.GamepackEncryption;
 import org.virtue.transformers.Transformer;
@@ -81,6 +83,11 @@ public class VirtueTransformer {
 	private TransformMode transform_mode;
 
 	/**
+	 * The current game mode
+	 */
+	private GameMode game_mode;
+	
+	/**
 	 * The current decompile mode
 	 */
 	private DecompileMode decompile_mode;
@@ -94,6 +101,11 @@ public class VirtueTransformer {
 	 * The config crawler, which grabs parameters
 	 */
 	private ConfigCrawler crawler;
+	
+	/**
+	 * The js5 worker, which identifies client major build
+	 */
+	private JS5Worker js5_worker;
 
 	/**
 	 * The Secret AES Key (Parameter: "0");
@@ -129,6 +141,7 @@ public class VirtueTransformer {
 
 	public VirtueTransformer() {
 		this.transform_mode = TransformMode.GRAB;
+		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
 		this.crawler = new ConfigCrawler();
 		this.decompiler = new BytecodeDecompiler();
@@ -140,7 +153,7 @@ public class VirtueTransformer {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
-			System.err.println("Usage: java -jar VirtueTransformer.jar -t_mode=<value> [-<option>=<value>]*");
+			System.err.println("Usage: java -jar VirtueTransformer.jar [-<option>=<value>]*");
 			System.err.println("Example: java -jar VirtueTransformer.jar -t_mode=2 -d_mode=2 -secret=aqmjTcXEDoe9a8BekbE3iw -vector=VPuc*5PB7oliknJVXdVDPw");
 			System.err.println();
 			throw new IllegalArgumentException("Invalid Runtime Arguments!");
@@ -149,14 +162,17 @@ public class VirtueTransformer {
 		instance = new VirtueTransformer();
 
 		/**
-		 * -t_mode= sets the transformation mode (Which stage should the program start at)
-		 * -d_mode= sets the decompile mode (Which decompiler should the program use)
+		 * -t_mode= sets the transformation mode (Which stage should the program start at) Default: GRAB
+		 * -g_mode= sets the game mode (Oldschool or Runescape3) Default: OLDSCHOOL
+		 * -d_mode= sets the decompile mode (Which decompiler should the program use) Default: JODE
 		 * -secret= sets the secret key for decrypting the gamepack (Only used when not grabbing the current rs gamepack)
 		 * -vector= sets the initialization vector for dercypting the gamepack (Only used when not grabbing the current rs gamepack)
 		 */
 		for (String option : args) {
 			if (option.startsWith("-t_mode")) {
 				instance.setTransformMode(TransformMode.valueOf(Integer.parseInt(option.substring(8))));
+			} else if (option.startsWith("-g_mode")) {
+				instance.setGameMode(GameMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-d_mode")) {
 				instance.setDecompileMode(DecompileMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-secret")) {
@@ -207,15 +223,29 @@ public class VirtueTransformer {
 				break;
 			case GRAB:
 				try {
-					getCrawler().crawl();
+					getCrawler().crawl(getGameMode().equals(GameMode.OLDSCHOOL));
+					
+					setJS5Worker(new JS5Worker(getCrawler().getCodebase(), getCrawler().getConnectionKey()));
+					getJS5Worker().connect(getGameMode().equals(GameMode.OLDSCHOOL) ? 73 : 836, 1);
+					setDirectory("./de_obf/" + (getGameMode().equals(GameMode.OLDSCHOOL) ? "oldschool/" : "rs3/") + getJS5Worker().identifyVersion() + "/");
+					
+					File file = new File(getDirectory());
+					if (!file.exists())
+						file.mkdirs();
+					
 					getCrawler().download();
-					setSecret(getCrawler().getParameters().get("0"));
-					setVector(getCrawler().getParameters().get("-1"));
 				} catch (IOException e) {
 					logger.error("Error crawling configs!", e);
 				}
+				
+				if (getGameMode().equals(GameMode.OLDSCHOOL))
+					setTransformMode(TransformMode.DEOBFUSCATE);
+				else {
+					setSecret(getCrawler().getParameters().get("0"));
+					setVector(getCrawler().getParameters().get("-1"));
+					setTransformMode(TransformMode.DECRYPT);
+				}
 				/* TODO: Grab the gamepack */
-				setTransformMode(TransformMode.DECRYPT);
 				break;
 			case DECRYPT:
 
@@ -231,7 +261,10 @@ public class VirtueTransformer {
 				break;
 			case DEOBFUSCATE:
 
-				getModule().initialization("./de_obf/decrypted.jar");
+				if (getGameMode().equals(GameMode.OLDSCHOOL))
+					getModule().initialization(getDirectory() + "gamepack.jar");
+				else
+					getModule().initialization(getDirectory() + "decrypted.jar");
 
 				synchronized (transformers) {
 					Iterator<Transformer> trans = transformers.iterator();
@@ -251,7 +284,7 @@ public class VirtueTransformer {
 			case DECOMPILE:
 
 				try {
-					getDecompiler().decompile();
+				//	getDecompiler().decompile();
 				} catch (Exception e) {
 					logger.error("Error Decompiling!", e);
 				}
@@ -299,6 +332,20 @@ public class VirtueTransformer {
 	}
 
 	/**
+	 * @return the game_mode
+	 */
+	public GameMode getGameMode() {
+		return game_mode;
+	}
+
+	/**
+	 * @param game_mode the game_mode to set
+	 */
+	public void setGameMode(GameMode game_mode) {
+		this.game_mode = game_mode;
+	}
+
+	/**
 	 * Grabs the current decompile mode
 	 * 
 	 * @return the mode
@@ -322,6 +369,20 @@ public class VirtueTransformer {
 	 */
 	public ConfigCrawler getCrawler() {
 		return crawler;
+	}
+
+	/**
+	 * @return the js5_worker
+	 */
+	public JS5Worker getJS5Worker() {
+		return js5_worker;
+	}
+
+	/**
+	 * @param js5_worker the js5_worker to set
+	 */
+	public void setJS5Worker(JS5Worker js5_worker) {
+		this.js5_worker = js5_worker;
 	}
 
 	/**

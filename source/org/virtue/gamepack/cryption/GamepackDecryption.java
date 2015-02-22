@@ -48,6 +48,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.VirtueTransformer;
 
 /**
  * @author Major
@@ -96,7 +97,7 @@ public class GamepackDecryption {
 	public GamepackDecryption(String secret, String vector) throws IOException {
 		this.encodedSecret = secret;
 		this.encodedVector = vector;
-		this.jar = new JarFile("./de_obf/gamepack.jar");
+		this.jar = new JarFile(VirtueTransformer.getInstance().getDirectory() + "gamepack.jar");
 
 		ZipEntry archive = jar.getEntry(CryptionConstants.ENCRYPTED_ARCHIVE_NAME);
 		this.input = new BufferedInputStream(jar.getInputStream(archive));
@@ -150,7 +151,7 @@ public class GamepackDecryption {
 			Pack200.newUnpacker().unpack(gzip, jos);
 		}
 
-		File file = new File("./de_obf/decrypted.jar");
+		File file = new File(VirtueTransformer.getInstance().getDirectory() + "decrypted.jar");
 		if (!file.exists())
 			file.createNewFile();
 		

@@ -21,6 +21,9 @@
  */
 package org.virtue.transformers.impl;
 
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.TransformMode;
@@ -73,5 +76,14 @@ public class ClassNameTransformer implements Transformer {
 	 */
 	public TransformMode getMode() {
 		return obfuscation ? TransformMode.OBFUSCATE : TransformMode.DEOBFUSCATE;
+	}
+	
+	private boolean containsNatives(ClassNode cNode) {
+		for (Object node : cNode.methods) {
+			MethodNode mNode = (MethodNode) node;
+			if ((mNode.access & Opcodes.ACC_NATIVE) != 0)
+				return true;
+		}
+		return false;
 	}
 }

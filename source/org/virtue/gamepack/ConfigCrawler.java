@@ -40,6 +40,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.VirtueTransformer;
 
 /**
  * @author Kyle Friz
@@ -58,8 +59,12 @@ public class ConfigCrawler {
 		parameters = new HashMap<String, String>();
 	}
 	
-	public void crawl() throws IOException {
-		URL url = new URL("http://www.runescape.com/k=3/l=en/jav_config.ws");
+	public void crawl(boolean oldschool) throws IOException {
+		URL url;
+		if (oldschool)
+			url = new URL("http://oldschool.runescape.com/k=3/l=en/jav_config.ws");
+		else
+			url = new URL("http://www.runescape.com/k=3/l=en/jav_config.ws");
 
 		try (InputStream is = new BufferedInputStream(url.openStream()); BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 			String line;
@@ -73,7 +78,7 @@ public class ConfigCrawler {
 					if (line.contains("halign")) {
 						args = line.substring(6).split("=ha");
 						parameters.put(args[0], "ha" + args[1]);
-					} else if (line.contains("services")) {
+					} else if (line.contains("services") || line.contains("slr.ws")) {
 						args = line.substring(6).split("=http");
 						parameters.put(args[0], "http" + args[1]);
 					} else {
@@ -99,7 +104,7 @@ public class ConfigCrawler {
 	 */
 	public void download() throws FileNotFoundException, IOException {
 		URL url = new URL(parameters.get("codebase") + parameters.get("initial_jar"));
-		try (InputStream is = new BufferedInputStream(url.openStream()); OutputStream os = new BufferedOutputStream(new FileOutputStream("./de_obf/gamepack.jar"))) {
+		try (InputStream is = new BufferedInputStream(url.openStream()); OutputStream os = new BufferedOutputStream(new FileOutputStream(VirtueTransformer.getInstance().getDirectory() + "gamepack.jar"))) {
 
 			int read;
 			while ((read = is.read()) != -1) {
@@ -108,13 +113,33 @@ public class ConfigCrawler {
 			is.close();
 			os.close();
 		}
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter("./de_obf/parameters.txt"))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(VirtueTransformer.getInstance().getDirectory() + "parameters.txt"))) {
 			for (String name : parameters.keySet()) {
 				writer.write("client_parameters.put(\"" + name + "\", \"" + parameters.get(name) + "\");");
 				writer.newLine();
 			}
 			writer.close();
 		}
+	}
+	
+	public String getCodebase() {
+		return parameters.get("codebase");
+	}
+	
+	/**
+	 * Gets the connection key (a 32-character string) from the {@link Map} of parameters.
+	 * 
+	 * @param parameters The map of parameter names to values.
+	 * @return The key.
+	 * @throws IllegalStateException If the map of parameters does not contain the connection key.
+	 */
+	public String getConnectionKey() {
+		for (String value : parameters.values()) {
+			if (value.length() == 32) {
+				return value;
+			}
+		}
+		return "";
 	}
 	
 	/**
