@@ -63,10 +63,11 @@ public class GamepackDecryption {
 	private static Logger logger = LoggerFactory.getLogger(GamepackDecryption.class);
 
 	/**
-	 * The key returned if an empty (i.e. {@code length == 0} string is decrypted.
+	 * The key returned if an empty (i.e. {@code length == 0} string is
+	 * decrypted.
 	 */
 	private static final byte[] EMPTY_KEY = new byte[0];
-	
+
 	/**
 	 * The encoded secret key for the AES block cipher.
 	 */
@@ -90,9 +91,12 @@ public class GamepackDecryption {
 	/**
 	 * Creates the inner pack decrypter.
 	 * 
-	 * @param secret The encoded secret key.
-	 * @param vector The encoded initialisation vector.
-	 * @throws IOException If the path to the gamepack is invalid.
+	 * @param secret
+	 *            The encoded secret key.
+	 * @param vector
+	 *            The encoded initialisation vector.
+	 * @throws IOException
+	 *             If the path to the gamepack is invalid.
 	 */
 	public GamepackDecryption(String secret, String vector) throws IOException {
 		this.encodedSecret = secret;
@@ -111,7 +115,8 @@ public class GamepackDecryption {
 	 * @throws NoSuchAlgorithmException
 	 *             If the current system does not have an AES implementation.
 	 * @throws NoSuchPaddingException
-	 *             If the current system does not support the specified padding  scheme.
+	 *             If the current system does not support the specified padding
+	 *             scheme.
 	 * @throws InvalidKeyException
 	 *             If the secret key is invalid.
 	 * @throws InvalidAlgorithmParameterException
@@ -124,10 +129,11 @@ public class GamepackDecryption {
 	 * @throws BadPaddingException
 	 *             If the data lacks the appropriate padding bytes.
 	 */
-	public void decrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException, BadPaddingException {
+	public void decrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException, BadPaddingException {
 		byte[] secretKey = encodedSecret.length() == 0 ? EMPTY_KEY : decodeBase64(encodedSecret);
 		byte[] vectorKey = encodedVector.length() == 0 ? EMPTY_KEY : decodeBase64(encodedVector);
-		
+
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKeySpec secret = new SecretKeySpec(secretKey, "AES");
 		IvParameterSpec vector = new IvParameterSpec(vectorKey);
@@ -146,15 +152,19 @@ public class GamepackDecryption {
 		byte[] decrypted = cipher.doFinal(buffer, 0, read);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(CryptionConstants.BUFFER_SIZE);
 
-		/* Un-gzips and unpacks the jar file contained in the archive, and writes the decompressed data out. */
-		try (JarOutputStream jos = new JarOutputStream(bos); GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(decrypted))) {
+		/*
+		 * Un-gzips and unpacks the jar file contained in the archive, and
+		 * writes the decompressed data out.
+		 */
+		try (JarOutputStream jos = new JarOutputStream(bos);
+				GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(decrypted))) {
 			Pack200.newUnpacker().unpack(gzip, jos);
 		}
 
 		File file = new File(VirtueTransformer.getInstance().getDirectory() + "decrypted.jar");
 		if (!file.exists())
 			file.createNewFile();
-		
+
 		/* Writes decrypted jar file out */
 		try (BufferedOutputStream jos = new BufferedOutputStream(new FileOutputStream(file))) {
 			jos.write(bos.toByteArray());
@@ -165,14 +175,18 @@ public class GamepackDecryption {
 	}
 
 	/**
-	 * Decodes the base64 string into a valid secret key or initialization vector.
+	 * Decodes the base64 string into a valid secret key or initialization
+	 * vector.
 	 * 
 	 * @param string
 	 *            The key.
 	 * @return The key, as a byte array.
 	 */
 	private byte[] decodeBase64(String string) {
-		/* JaGex's implementation uses * and - instead of + and /, so replace them. */
+		/*
+		 * JaGex's implementation uses * and - instead of + and /, so replace
+		 * them.
+		 */
 		String valid = string.replaceAll("\\*", "\\+").replaceAll("-", "/");
 
 		Base64.Decoder base64 = Base64.getDecoder();

@@ -41,8 +41,10 @@ import org.virtue.VirtueTransformer;
  */
 
 /**
- * A simple version of Method's Js5Worker that identifies the current client version and exits. See the RS Cache
- * downloader thread <a href="http://www.rune-server.org/showpost.php?p=2170098">here</a> for the original version.
+ * A simple version of Method's Js5Worker that identifies the current client
+ * version and exits. See the RS Cache downloader thread <a
+ * href="http://www.rune-server.org/showpost.php?p=2170098">here</a> for the
+ * original version.
  * 
  * @author Method
  * @author Major
@@ -54,14 +56,15 @@ public final class JS5Worker implements Closeable {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(ConfigCrawler.class);
-	
+
 	/**
 	 * The type of response received from the server.
 	 */
 	private enum HandshakeResponse {
 
 		/**
-		 * The outdated handshake response, when the major or minor version is incorrect.
+		 * The outdated handshake response, when the major or minor version is
+		 * incorrect.
 		 */
 		OUTDATED,
 
@@ -71,15 +74,18 @@ public final class JS5Worker implements Closeable {
 		UNKNOWN,
 
 		/**
-		 * The valid handshake response, when the major and minor versions are correct.
+		 * The valid handshake response, when the major and minor versions are
+		 * correct.
 		 */
 		VALID;
 
 		/**
 		 * Returns the handshake response associated with the specified value.
 		 * 
-		 * @param value The value.
-		 * @return The handshake response, or {@link #UNKNOWN} if the value is not associated with a response.
+		 * @param value
+		 *            The value.
+		 * @return The handshake response, or {@link #UNKNOWN} if the value is
+		 *         not associated with a response.
 		 */
 		public static HandshakeResponse valueOf(int value) {
 			switch (value) {
@@ -99,7 +105,8 @@ public final class JS5Worker implements Closeable {
 	private enum State {
 
 		/**
-		 * The connecting state, where the worker has sent the initial handshake but not yet received a response.
+		 * The connecting state, where the worker has sent the initial handshake
+		 * but not yet received a response.
 		 */
 		CONNECTING,
 
@@ -158,14 +165,17 @@ public final class JS5Worker implements Closeable {
 	/**
 	 * Creates the js5 worker.
 	 * 
-	 * @param host The host to connect to.
-	 * @param key The connection key.
-	 * @throws IOException If there is an error opening the socket.
+	 * @param host
+	 *            The host to connect to.
+	 * @param key
+	 *            The connection key.
+	 * @throws IOException
+	 *             If there is an error opening the socket.
 	 */
 	public JS5Worker(String host, String key) throws IOException {
 		this.host = host.replace("http://", "").replace("/k=3/", "");
 		this.key = key;
-		
+
 		socket = new Socket(this.host, 43594);
 		input = socket.getInputStream();
 		output = socket.getOutputStream();
@@ -178,11 +188,15 @@ public final class JS5Worker implements Closeable {
 	}
 
 	/**
-	 * Connects to the specified host on port 43594 and initiates the update protocol handshake.
+	 * Connects to the specified host on port 43594 and initiates the update
+	 * protocol handshake.
 	 * 
-	 * @param major The client's major version.
-	 * @param minor The client's minor version.
-	 * @throws IOException If there is an error initiating the handshake.
+	 * @param major
+	 *            The client's major version.
+	 * @param minor
+	 *            The client's minor version.
+	 * @throws IOException
+	 *             If there is an error initiating the handshake.
 	 */
 	public void connect(int major, int minor) throws IOException {
 		this.major = major;
@@ -194,7 +208,8 @@ public final class JS5Worker implements Closeable {
 	 * Identifies the current runescape client version.
 	 * 
 	 * @return The version.
-	 * @throws IOException If there is an error reading from the input stream.
+	 * @throws IOException
+	 *             If there is an error reading from the input stream.
 	 */
 	public int identifyVersion() throws IOException {
 		return identifyVersion(100);
@@ -203,10 +218,13 @@ public final class JS5Worker implements Closeable {
 	/**
 	 * Identifies the current runescape client version.
 	 * 
-	 * @param attempts The amount of attempts to make before stopping.
+	 * @param attempts
+	 *            The amount of attempts to make before stopping.
 	 * @return The version.
-	 * @throws IOException If there is an error reading from the input stream.
-	 * @throws IllegalStateException If the correct client version could not be found.
+	 * @throws IOException
+	 *             If there is an error reading from the input stream.
+	 * @throws IllegalStateException
+	 *             If the correct client version could not be found.
 	 */
 	public int identifyVersion(int attempts) throws IOException {
 		for (int i = 0; i < attempts; i++) {
@@ -244,13 +262,16 @@ public final class JS5Worker implements Closeable {
 			}
 		}
 
-		throw new IllegalStateException("Could not identify the correct client version after " + attempts + " attempts, please report.");
+		throw new IllegalStateException("Could not identify the correct client version after " + attempts
+				+ " attempts, please report.");
 	}
 
 	/**
-	 * Initializes the connection and writes the first stage of the handshake to the output stream.
+	 * Initializes the connection and writes the first stage of the handshake to
+	 * the output stream.
 	 * 
-	 * @throws IOException If there is an error writing to the output stream.
+	 * @throws IOException
+	 *             If there is an error writing to the output stream.
 	 */
 	private void init() throws IOException {
 		ByteBuffer buffer;
@@ -276,7 +297,8 @@ public final class JS5Worker implements Closeable {
 	/**
 	 * Resets this worker, closing and re-opening the socket.
 	 * 
-	 * @throws IOException If there is an error closing or re-opening the socket.
+	 * @throws IOException
+	 *             If there is an error closing or re-opening the socket.
 	 */
 	private void reset() throws IOException {
 		socket.close();

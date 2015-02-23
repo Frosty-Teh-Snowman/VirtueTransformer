@@ -63,7 +63,7 @@ public enum TransformMode {
 	 * 
 	 * @param val
 	 *            The value
-	 * @return	  The mode
+	 * @return The mode
 	 */
 	public static TransformMode valueOf(int val) {
 		switch (val) {

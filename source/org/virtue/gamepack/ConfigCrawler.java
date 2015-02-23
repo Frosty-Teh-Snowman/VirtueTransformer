@@ -32,8 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,13 +50,13 @@ public class ConfigCrawler {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(ConfigCrawler.class);
-	
+
 	private Map<String, String> parameters;
-	
+
 	public ConfigCrawler() {
 		parameters = new HashMap<String, String>();
 	}
-	
+
 	public void crawl(boolean oldschool) throws IOException {
 		URL url;
 		if (oldschool)
@@ -66,7 +64,8 @@ public class ConfigCrawler {
 		else
 			url = new URL("http://www.runescape.com/k=3/l=en/jav_config.ws");
 
-		try (InputStream is = new BufferedInputStream(url.openStream()); BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+		try (InputStream is = new BufferedInputStream(url.openStream());
+				BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				if (line.startsWith("codebase"))
@@ -95,16 +94,18 @@ public class ConfigCrawler {
 		}
 		logger.info("Crawled " + parameters.size() + " Config(s).");
 	}
-	
 
 	/**
 	 * Downloads and saves the gamepack. Also saves the parameters
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
+	 * 
+	 * @throws IOException
+	 * @throws FileNotFoundException
 	 */
 	public void download() throws FileNotFoundException, IOException {
 		URL url = new URL(parameters.get("codebase") + parameters.get("initial_jar"));
-		try (InputStream is = new BufferedInputStream(url.openStream()); OutputStream os = new BufferedOutputStream(new FileOutputStream(VirtueTransformer.getInstance().getDirectory() + "gamepack.jar"))) {
+		try (InputStream is = new BufferedInputStream(url.openStream());
+				OutputStream os = new BufferedOutputStream(new FileOutputStream(VirtueTransformer.getInstance()
+						.getDirectory() + "gamepack.jar"))) {
 
 			int read;
 			while ((read = is.read()) != -1) {
@@ -113,7 +114,8 @@ public class ConfigCrawler {
 			is.close();
 			os.close();
 		}
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(VirtueTransformer.getInstance().getDirectory() + "parameters.txt"))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(VirtueTransformer.getInstance().getDirectory()
+				+ "parameters.txt"))) {
 			for (String name : parameters.keySet()) {
 				writer.write("client_parameters.put(\"" + name + "\", \"" + parameters.get(name) + "\");");
 				writer.newLine();
@@ -121,17 +123,20 @@ public class ConfigCrawler {
 			writer.close();
 		}
 	}
-	
+
 	public String getCodebase() {
 		return parameters.get("codebase");
 	}
-	
+
 	/**
-	 * Gets the connection key (a 32-character string) from the {@link Map} of parameters.
+	 * Gets the connection key (a 32-character string) from the {@link Map} of
+	 * parameters.
 	 * 
-	 * @param parameters The map of parameter names to values.
+	 * @param parameters
+	 *            The map of parameter names to values.
 	 * @return The key.
-	 * @throws IllegalStateException If the map of parameters does not contain the connection key.
+	 * @throws IllegalStateException
+	 *             If the map of parameters does not contain the connection key.
 	 */
 	public String getConnectionKey() {
 		for (String value : parameters.values()) {
@@ -141,12 +146,13 @@ public class ConfigCrawler {
 		}
 		return "";
 	}
-	
-	/**
-	 * @return the parameters
-	 */
-	public Map<String, String> getParameters() {
-		return parameters;
+
+	public String getSecretKey() {
+		return parameters.get("0");
 	}
-	
+
+	public String getIVector() {
+		return parameters.get("-1");
+	}
+
 }

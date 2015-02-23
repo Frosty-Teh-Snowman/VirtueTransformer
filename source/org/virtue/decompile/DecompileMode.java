@@ -28,26 +28,27 @@ package org.virtue.decompile;
 public enum DecompileMode {
 
 	/**
-	 * Represents decompilation should use the JODE Decompiler 
-	 * NOTE: JODE Fails to decompile one class, and also messes up another class (Choppy Items)
+	 * Represents decompilation should use the JODE Decompiler NOTE: JODE Fails
+	 * to decompile one class, and also messes up another class (Choppy Items)
 	 */
 	JODE,
 
 	/**
-	 * Represents decompilation should use the CFR Decompiler 
-	 * NOTE: CFR is still in development, so it will fail to decompile many classes
+	 * Represents decompilation should use the CFR Decompiler NOTE: CFR is still
+	 * in development, so it will fail to decompile many classes
 	 */
 	CFR,
 
 	/**
-	 * Represents decompilation should use the Fernflower Decompiler 
-	 * NOTE: Fernflower is an pretty good decompile, should use this to decompile the class that JODE messes up (Choppy Items)
+	 * Represents decompilation should use the Fernflower Decompiler NOTE:
+	 * Fernflower is an pretty good decompile, should use this to decompile the
+	 * class that JODE messes up (Choppy Items)
 	 */
 	FERNFLOWER,
 
 	/**
-	 * Represents decompilation should use the Procyon Decompiler 
-	 * NOTE: Procyon is still in development, so it will fail to decompile some classes
+	 * Represents decompilation should use the Procyon Decompiler NOTE: Procyon
+	 * is still in development, so it will fail to decompile some classes
 	 */
 	PROCYON;
 
@@ -56,7 +57,7 @@ public enum DecompileMode {
 	 * 
 	 * @param val
 	 *            The value
-	 * @return 	  The mode
+	 * @return The mode
 	 */
 	public static DecompileMode valueOf(int val) {
 		switch (val) {

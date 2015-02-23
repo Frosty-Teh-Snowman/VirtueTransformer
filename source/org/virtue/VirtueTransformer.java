@@ -39,12 +39,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
+import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.deobbers.ClassNameDeobber;
+import org.virtue.deobfuscate.deobbers.DeadCodeDeobber;
+import org.virtue.deobfuscate.deobbers.ExceptionTableDeobber;
+import org.virtue.deobfuscate.deobbers.IntShiftDeobber;
+import org.virtue.deobfuscate.deobbers.LongShiftDeobber;
+import org.virtue.deobfuscate.deobbers.MultiplicationDeobber;
+import org.virtue.deobfuscate.deobbers.TreeBuilderDeobber;
+import org.virtue.deobfuscate.deobbers.ZKMFlowDeobber;
 import org.virtue.gamepack.ConfigCrawler;
 import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
 import org.virtue.gamepack.cryption.GamepackEncryption;
-import org.virtue.transformers.Transformer;
-import org.virtue.transformers.impl.ClassNameTransformer;
 
 /**
  * @author Kyle Friz
@@ -76,7 +83,7 @@ public class VirtueTransformer {
 	 * The working directory
 	 */
 	private String directory;
-	
+
 	/**
 	 * The current transform mode
 	 */
@@ -86,54 +93,49 @@ public class VirtueTransformer {
 	 * The current game mode
 	 */
 	private GameMode game_mode;
-	
+
 	/**
 	 * The current decompile mode
 	 */
 	private DecompileMode decompile_mode;
+
+	/**
+	 * The injector
+	 */
+	private Injector injector;
 	
 	/**
 	 * The bytecode decompiler
 	 */
 	private BytecodeDecompiler decompiler;
-	
+
 	/**
 	 * The config crawler, which grabs parameters
 	 */
 	private ConfigCrawler crawler;
-	
+
 	/**
 	 * The js5 worker, which identifies client major build
 	 */
 	private JS5Worker js5_worker;
 
 	/**
-	 * The Secret AES Key (Parameter: "0");
-	 * NOTE: Only used for decypting a gamepack
+	 * The Secret AES Key (Parameter: "0"); NOTE: Only used for decypting a
+	 * gamepack
 	 */
 	private String secret;
 
 	/**
-	 * The Vector AES Key (Parameter: "-1")
-	 * NOTE: Only used for decypting a gamepack
+	 * The Vector AES Key (Parameter: "-1") NOTE: Only used for decypting a
+	 * gamepack
 	 */
 	private String vector;
 
 	/**
-	 * The list of transformers
-	 */
-	private List<Transformer> transformers;
-
-	/**
-	 * The module for holding classes
-	 */
-	private ClassModule module;
-	
-	/**
 	 * The Gamepack decrytor
 	 */
 	private GamepackDecryption g_decrypt;
-	
+
 	/**
 	 * The Gamepack encryptor
 	 */
@@ -144,11 +146,10 @@ public class VirtueTransformer {
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
 		this.crawler = new ConfigCrawler();
+		this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
-		this.module = new ClassModule();
 		this.startTime = System.currentTimeMillis();
 		this.running = true;
-		this.transformers = Collections.synchronizedList(new ArrayList<Transformer>());
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -158,15 +159,18 @@ public class VirtueTransformer {
 			System.err.println();
 			throw new IllegalArgumentException("Invalid Runtime Arguments!");
 		}
-		
+
 		instance = new VirtueTransformer();
 
 		/**
-		 * -t_mode= sets the transformation mode (Which stage should the program start at) Default: GRAB
-		 * -g_mode= sets the game mode (Oldschool or Runescape3) Default: OLDSCHOOL
-		 * -d_mode= sets the decompile mode (Which decompiler should the program use) Default: JODE
-		 * -secret= sets the secret key for decrypting the gamepack (Only used when not grabbing the current rs gamepack)
-		 * -vector= sets the initialization vector for dercypting the gamepack (Only used when not grabbing the current rs gamepack)
+		 * -t_mode= sets the transformation mode (Which stage should the program
+		 * start at) Default: GRAB -g_mode= sets the game mode (Oldschool or
+		 * Runescape3) Default: OLDSCHOOL -d_mode= sets the decompile mode
+		 * (Which decompiler should the program use) Default: JODE -secret= sets
+		 * the secret key for decrypting the gamepack (Only used when not
+		 * grabbing the current rs gamepack) -vector= sets the initialization
+		 * vector for dercypting the gamepack (Only used when not grabbing the
+		 * current rs gamepack)
 		 */
 		for (String option : args) {
 			if (option.startsWith("-t_mode")) {
@@ -181,10 +185,16 @@ public class VirtueTransformer {
 				instance.setVector(option.substring(8));
 			}
 		}
-		
-		instance.getTransformers().add(new ClassNameTransformer(true));
-		instance.getTransformers().add(new ClassNameTransformer(false));
 
+		instance.getInjector().registerDeobber(new ClassNameDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new DeadCodeDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new ExceptionTableDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new IntShiftDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new LongShiftDeobber(instance.getInjector()));
+		//instance.getInjector().registerDeobber(new MultiplicationDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new TreeBuilderDeobber(instance.getInjector()));
+		instance.getInjector().registerDeobber(new ZKMFlowDeobber(instance.getInjector()));
+		
 		instance.process();
 	}
 
@@ -197,52 +207,41 @@ public class VirtueTransformer {
 			switch (getTransformMode()) {
 			case OBFUSCATE:
 
-				getModule().initialization("./obf/original.jar");
-
-				synchronized (transformers) {
-					Iterator<Transformer> trans = transformers.iterator();
-					while (trans.hasNext()) {
-						Transformer transformer = trans.next();
-						if (transformer.getMode().equals(TransformMode.OBFUSCATE)) {
-							transformer.initialization();
-							transformer.transformation();
-							transformer.finalization();
-						}
-					}
-				}
-				
 				try {
 					setGamepackEncryption(new GamepackEncryption());
 					getGamepackEncryption().encrypt();
-				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException | IOException e) {
+				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
+						| InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
+						| IOException e) {
 					logger.error("Error encrypting gamepack!", e);
 				}
-				
+
 				/* TODO: Obfuscate a jar */
 				setTransformMode(TransformMode.FINALIZE);
 				break;
 			case GRAB:
 				try {
 					getCrawler().crawl(getGameMode().equals(GameMode.OLDSCHOOL));
-					
+
 					setJS5Worker(new JS5Worker(getCrawler().getCodebase(), getCrawler().getConnectionKey()));
 					getJS5Worker().connect(getGameMode().equals(GameMode.OLDSCHOOL) ? 73 : 836, 1);
-					setDirectory("./de_obf/" + (getGameMode().equals(GameMode.OLDSCHOOL) ? "oldschool/" : "rs3/") + getJS5Worker().identifyVersion() + "/");
-					
+					setDirectory("./de_obf/" + (getGameMode().equals(GameMode.OLDSCHOOL) ? "oldschool/" : "rs3/")
+							+ getJS5Worker().identifyVersion() + "/");
+
 					File file = new File(getDirectory());
 					if (!file.exists())
 						file.mkdirs();
-					
+
 					getCrawler().download();
 				} catch (IOException e) {
 					logger.error("Error crawling configs!", e);
 				}
-				
+
 				if (getGameMode().equals(GameMode.OLDSCHOOL))
 					setTransformMode(TransformMode.DEOBFUSCATE);
 				else {
-					setSecret(getCrawler().getParameters().get("0"));
-					setVector(getCrawler().getParameters().get("-1"));
+					setSecret(getCrawler().getSecretKey());
+					setVector(getCrawler().getIVector());
 					setTransformMode(TransformMode.DECRYPT);
 				}
 				/* TODO: Grab the gamepack */
@@ -252,30 +251,25 @@ public class VirtueTransformer {
 				try {
 					setGamepackDecryption(new GamepackDecryption(getSecret(), getVector()));
 					getGamepackDecryption().decrypt();
-				} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+				} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
+						| InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
 					logger.error("Error decrypting gamepack!", e);
 				}
-				
+
 				/* TODO: Decrypt the gamepack */
 				setTransformMode(TransformMode.DEOBFUSCATE);
 				break;
 			case DEOBFUSCATE:
 
-				if (getGameMode().equals(GameMode.OLDSCHOOL))
-					getModule().initialization(getDirectory() + "gamepack.jar");
-				else
-					getModule().initialization(getDirectory() + "decrypted.jar");
-
-				synchronized (transformers) {
-					Iterator<Transformer> trans = transformers.iterator();
-					while (trans.hasNext()) {
-						Transformer transformer = trans.next();
-						if (transformer.getMode().equals(TransformMode.DEOBFUSCATE)) {
-							transformer.initialization();
-							transformer.transformation();
-							transformer.finalization();
-						}
-					}
+				try {
+					if (getGameMode().equals(GameMode.OLDSCHOOL))
+						getInjector().initialization(getDirectory() + "gamepack.jar");
+					else
+						getInjector().initialization(getDirectory() + "decrypted.jar");
+					
+					getInjector().deobfuscate();
+				} catch (IOException e) {
+					logger.error("Error deobfuscating!", e);
 				}
 				
 				/* TODO: Deobfuscate a jar */
@@ -284,11 +278,11 @@ public class VirtueTransformer {
 			case DECOMPILE:
 
 				try {
-				//	getDecompiler().decompile();
+			//		 getDecompiler().decompile(getDirectory() + "decrypted.jar", getDirectory() + "source/");
 				} catch (Exception e) {
 					logger.error("Error Decompiling!", e);
 				}
-				
+
 				/* TODO: Decompile a jar */
 				setTransformMode(TransformMode.FINALIZE);
 				break;
@@ -339,7 +333,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param game_mode the game_mode to set
+	 * @param game_mode
+	 *            the game_mode to set
 	 */
 	public void setGameMode(GameMode game_mode) {
 		this.game_mode = game_mode;
@@ -353,7 +348,7 @@ public class VirtueTransformer {
 	public DecompileMode getDecompileMode() {
 		return decompile_mode;
 	}
-	
+
 	/**
 	 * Sets the current mode
 	 * 
@@ -362,6 +357,20 @@ public class VirtueTransformer {
 	 */
 	public void setDecompileMode(DecompileMode mode) {
 		this.decompile_mode = mode;
+	}
+
+	/**
+	 * @return the injector
+	 */
+	public Injector getInjector() {
+		return injector;
+	}
+
+	/**
+	 * @param injector the injector to set
+	 */
+	public void setInjector(Injector injector) {
+		this.injector = injector;
 	}
 
 	/**
@@ -379,7 +388,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param js5_worker the js5_worker to set
+	 * @param js5_worker
+	 *            the js5_worker to set
 	 */
 	public void setJS5Worker(JS5Worker js5_worker) {
 		this.js5_worker = js5_worker;
@@ -407,7 +417,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param directory the directory to set
+	 * @param directory
+	 *            the directory to set
 	 */
 	public void setDirectory(String directory) {
 		this.directory = directory;
@@ -422,26 +433,12 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @return the transformers
-	 */
-	public List<Transformer> getTransformers() {
-		return transformers;
-	}
-
-	/**
-	 * @return the module
-	 */
-	public ClassModule getModule() {
-		return module;
-	}
-
-	/**
 	 * @return the decompiler
 	 */
 	public BytecodeDecompiler getDecompiler() {
 		return decompiler;
 	}
-	
+
 	/**
 	 * @return the secret
 	 */
@@ -480,7 +477,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param g_decrypt the g_decrypt to set
+	 * @param g_decrypt
+	 *            the g_decrypt to set
 	 */
 	public void setGamepackDecryption(GamepackDecryption g_decrypt) {
 		this.g_decrypt = g_decrypt;
@@ -494,7 +492,8 @@ public class VirtueTransformer {
 	}
 
 	/**
-	 * @param g_encrypt the g_encrypt to set
+	 * @param g_encrypt
+	 *            the g_encrypt to set
 	 */
 	public void setGamepackEncryption(GamepackEncryption g_encrypt) {
 		this.g_encrypt = g_encrypt;

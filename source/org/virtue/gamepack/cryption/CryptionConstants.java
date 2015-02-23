@@ -21,7 +21,6 @@
  */
 package org.virtue.gamepack.cryption;
 
-
 /**
  * @author Major
  * @author Kyle Friz
@@ -29,7 +28,8 @@ package org.virtue.gamepack.cryption;
 public class CryptionConstants {
 
 	/**
-	 * The size of the buffer used when decrypting the {@code inner.pack.gz} archive, in bytes.
+	 * The size of the buffer used when decrypting the {@code inner.pack.gz}
+	 * archive, in bytes.
 	 */
 	public static final int BUFFER_SIZE = 0x500000;
 

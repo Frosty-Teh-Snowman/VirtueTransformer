@@ -35,24 +35,24 @@ public class BytecodeDecompiler {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(BytecodeDecompiler.class);
-	
-	public void decompile() throws Exception {
+
+	public void decompile(String input, String output) throws Exception {
 		switch (VirtueTransformer.getInstance().getDecompileMode()) {
 		case CFR:
-			org.benf.cfr.reader.Main.main(new String[] { "./de_obf/decrypted.jar", "--outputdir",  "./de_obf/source/" });
+			org.benf.cfr.reader.Main.main(new String[] { input, "--outputdir", output });
 			break;
 		case FERNFLOWER:
-			de.fernflower.main.decompiler.ConsoleDecompiler.main(new String[] { "./de_obf/decrypted.jar",  "./de_obf/source/" });
+			de.fernflower.main.decompiler.ConsoleDecompiler.main(new String[] { input, output });
 			break;
 		case JODE:
-			jode.decompiler.Main.main(new String[] { "--style",  "gnu",  "--dest", "./de_obf/source/", "./de_obf/decrypted.jar" });
+			jode.decompiler.Main.main(new String[] { "--style", "gnu", "--dest", output, input });
 			break;
 		case PROCYON:
-			com.strobel.decompiler.DecompilerDriver.main(new String[] { "-jar", "./de_obf/decrypted.jar", "-o",  "./de_obf/source/" });
+			com.strobel.decompiler.DecompilerDriver.main(new String[] { "-jar", input, "-o", output });
 			break;
 		default:
 			break;
-		
+
 		}
 		logger.info("Decompiled using: " + VirtueTransformer.getInstance().getDecompileMode().toString());
 	}

@@ -21,7 +21,6 @@
  */
 package org.virtue;
 
-
 /**
  * @author Kyle Friz
  * @since Feb 22, 2015
@@ -32,18 +31,18 @@ public enum GameMode {
 	 * Represents the choice of connecting to oldschool
 	 */
 	OLDSCHOOL,
-	
+
 	/**
 	 * Represents the choice of connecting to runescape3
 	 */
 	RUNESCAPE3;
-	
+
 	/**
 	 * Grabs the mode for the specified value
 	 * 
 	 * @param val
 	 *            The value
-	 * @return	  The mode
+	 * @return The mode
 	 */
 	public static GameMode valueOf(int val) {
 		switch (val) {
@@ -54,5 +53,5 @@ public enum GameMode {
 		}
 		return null;
 	}
-	
+
 }

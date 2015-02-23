@@ -62,7 +62,7 @@ public class GamepackEncryption {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(GamepackEncryption.class);
-	
+
 	/**
 	 * The input stream to the {@code inner.pack.gz} file.
 	 */
@@ -77,16 +77,17 @@ public class GamepackEncryption {
 	public GamepackEncryption() throws IOException {
 		this.input = new BufferedInputStream(new FileInputStream("./obf/obfuscated.jar/"));
 	}
-	
+
 	/**
-	 * Packs a jar using Pack200, then GZIPs it, then uses and AES
-	 * Cipher to encrypt the jar
+	 * Packs a jar using Pack200, then GZIPs it, then uses and AES Cipher to
+	 * encrypt the jar
 	 * 
 	 * @return The map of class names to the byte buffers containing their data.
 	 * @throws NoSuchAlgorithmException
 	 *             If the current system does not have an AES implementation.
 	 * @throws NoSuchPaddingException
-	 *             If the current system does not support the specified padding  scheme.
+	 *             If the current system does not support the specified padding
+	 *             scheme.
 	 * @throws InvalidKeyException
 	 *             If the secret key is invalid.
 	 * @throws InvalidAlgorithmParameterException
@@ -99,7 +100,8 @@ public class GamepackEncryption {
 	 * @throws BadPaddingException
 	 *             If the data lacks the appropriate padding bytes.
 	 */
-	public void encrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException, BadPaddingException {
+	public void encrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException, IOException, IllegalBlockSizeException, BadPaddingException {
 
 		/* Generate a AES Secret key */
 		KeyGenerator factory = KeyGenerator.getInstance("AES");
@@ -109,10 +111,10 @@ public class GamepackEncryption {
 		SecureRandom random = new SecureRandom();
 		byte iv[] = new byte[16];
 		random.nextBytes(iv);
-		
+
 		System.out.println(encodeBase64(key.getEncoded()));
 		System.out.println(encodeBase64(iv));
-		
+
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKey secret = new SecretKeySpec(key.getEncoded(), "AES");
 		IvParameterSpec vector = new IvParameterSpec(iv);
@@ -126,11 +128,12 @@ public class GamepackEncryption {
 		while (read < buffer.length && (in = input.read(buffer, read, buffer.length - read)) != -1) {
 			read += in;
 		}
-		
+
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(CryptionConstants.BUFFER_SIZE);
 
 		/* Packs and GZIPs the jar file, and writes the compressed data out. */
-		try (JarInputStream jis = new JarInputStream(new ByteArrayInputStream(buffer)); GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
+		try (JarInputStream jis = new JarInputStream(new ByteArrayInputStream(buffer));
+				GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
 			Pack200.newPacker().pack(jis, gzip);
 		}
 
@@ -140,7 +143,7 @@ public class GamepackEncryption {
 		File file = new File("./obf/inner.pack.gz");
 		if (!file.exists())
 			file.createNewFile();
-		
+
 		/* Writes encrypted file file out */
 		try (BufferedOutputStream jos = new BufferedOutputStream(new FileOutputStream(file))) {
 			jos.write(encrypted);
@@ -159,8 +162,11 @@ public class GamepackEncryption {
 	private String encodeBase64(byte[] bytes) {
 		Base64.Encoder base64 = Base64.getEncoder();
 		String string = new String(base64.encode(bytes));
-		
-		/* JaGex's implementation uses * and - instead of + and /, so replace them. */
+
+		/*
+		 * JaGex's implementation uses * and - instead of + and /, so replace
+		 * them.
+		 */
 		return string.replaceAll("\\+", "\\*").replaceAll("/", "-");
 	}
 }
