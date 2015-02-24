@@ -16,7 +16,7 @@ import org.apache.bcel.generic.TargetLostException;
 import org.apache.bcel.generic.UnconditionalBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 
 public class DeadCodeTransformer extends Transformer {
@@ -33,7 +33,7 @@ public class DeadCodeTransformer extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 		ConstantPoolGen cpg = classGen.getConstantPool();
 		for (Method m : classGen.getMethods()) {
 			if (m.isAbstract())

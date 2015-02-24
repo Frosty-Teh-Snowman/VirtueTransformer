@@ -36,7 +36,7 @@ import org.apache.bcel.generic.SIPUSH;
 import org.apache.bcel.util.InstructionFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 
 public class LongShiftTransformer extends Transformer {
@@ -53,7 +53,7 @@ public class LongShiftTransformer extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 		ConstantPoolGen cpg = classGen.getConstantPool();
 		for (Method m : classGen.getMethods()) {
 			if (m.isAbstract()) {

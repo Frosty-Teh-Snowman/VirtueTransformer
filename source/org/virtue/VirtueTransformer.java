@@ -26,10 +26,6 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -39,8 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
-import org.virtue.deobfuscate.Injector;
 import org.virtue.deobfuscate.transformer.impl.ClassNameTransformer;
+import org.virtue.deobfuscate.transformer.impl.ControlFlowTransformer;
 import org.virtue.deobfuscate.transformer.impl.DeadCodeTransformer;
 import org.virtue.deobfuscate.transformer.impl.EuclideanNumberDeobber;
 import org.virtue.deobfuscate.transformer.impl.ExceptionTableTransformer;
@@ -48,7 +44,6 @@ import org.virtue.deobfuscate.transformer.impl.IntShiftTransformer;
 import org.virtue.deobfuscate.transformer.impl.LongShiftTransformer;
 import org.virtue.deobfuscate.transformer.impl.MultiplicationTransformer;
 import org.virtue.deobfuscate.transformer.impl.TreeBuilderTransformer;
-import org.virtue.deobfuscate.transformer.impl.ControlFlowTransformer;
 import org.virtue.gamepack.ConfigCrawler;
 import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
@@ -151,7 +146,7 @@ public class VirtueTransformer {
 		this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
 		this.startTime = System.currentTimeMillis();
-		this.running = true;
+		this.running = false;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -161,6 +156,15 @@ public class VirtueTransformer {
 			System.err.println();
 			throw new IllegalArgumentException("Invalid Runtime Arguments!");
 		}
+		
+		System.out.println("/*********************************************************************\\");
+	    System.out.println("\\*       VirtueTransformer  Copyright (C) 2015  Kyle Friz            */");
+	    System.out.println("/*        Runescape 3/07 Bytecode Transformer & Obfuscator           *\\");
+	    System.out.println("\\*                                                                   */");
+	    System.out.println("/*        This program comes with ABSOLUTELY NO WARRANTY.            *\\");
+	    System.out.println("\\*  This is free software, and you are welcome to redistribute it    */");
+	    System.out.println("/*                      under certain conditions.                    *\\");
+	    System.out.println("\\*********************************************************************/");
 
 		instance = new VirtueTransformer();
 
@@ -184,16 +188,6 @@ public class VirtueTransformer {
 				instance.setVector(option.substring(8));
 			}
 		}
-
-		instance.getInjector().registerTransformer(new ClassNameTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new DeadCodeTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new EuclideanNumberDeobber(instance.getInjector()));
-		instance.getInjector().registerTransformer(new ExceptionTableTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new IntShiftTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new LongShiftTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new MultiplicationTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new TreeBuilderTransformer(instance.getInjector()));
-		instance.getInjector().registerTransformer(new ControlFlowTransformer(instance.getInjector()));
 		
 		instance.process();
 	}
@@ -203,11 +197,15 @@ public class VirtueTransformer {
 	 */
 	private void process() {
 		while (isRunning()) {
-			System.out.println(getTransformMode().toString());
 			switch (getTransformMode()) {
 			case OBFUSCATE:
-
+				setDirectory("./obf/");
+				
+				getInjector().registerTransformer(new org.virtue.obfuscate.transformer.impl.ClassNameTransformer(getInjector()));
+				getInjector().initialization(getDirectory() + "original.jar");
+				
 				try {
+					getInjector().transform();
 					setGamepackEncryption(new GamepackEncryption());
 					getGamepackEncryption().encrypt();
 				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
@@ -261,6 +259,16 @@ public class VirtueTransformer {
 				break;
 			case DEOBFUSCATE:
 
+				getInjector().registerTransformer(new ClassNameTransformer(getInjector()));
+				getInjector().registerTransformer(new DeadCodeTransformer(getInjector()));
+				getInjector().registerTransformer(new EuclideanNumberDeobber(getInjector()));
+				getInjector().registerTransformer(new ExceptionTableTransformer(getInjector()));
+				getInjector().registerTransformer(new IntShiftTransformer(getInjector()));
+				getInjector().registerTransformer(new LongShiftTransformer(getInjector()));
+				getInjector().registerTransformer(new MultiplicationTransformer(getInjector()));
+				getInjector().registerTransformer(new TreeBuilderTransformer(getInjector()));
+				getInjector().registerTransformer(new ControlFlowTransformer(getInjector()));
+				
 				try {
 					if (getGameMode().equals(GameMode.OLDSCHOOL))
 						getInjector().initialization(getDirectory() + "gamepack.jar");

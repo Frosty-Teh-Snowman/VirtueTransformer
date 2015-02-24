@@ -27,7 +27,7 @@ import org.apache.bcel.generic.LDC2_W;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.apache.bcel.util.InstructionFinder;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 
 public class EuclideanNumberDeobber extends Transformer {
@@ -39,7 +39,7 @@ public class EuclideanNumberDeobber extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 		String[] patterns = { "((ldc|ldc_w) (getstatic|getfield) imul)|(ldc2_w (getstatic|getfield) lmul)",
 				"(getstatic|getfield) (((ldc|ldc_w) imul)|(ldc2_w lmul))",
 				"(((ldc|ldc_w) imul)|(ldc2_w lmul)) (putstatic|putfield)" };

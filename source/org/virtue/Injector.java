@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate;
+package org.virtue;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,7 +15,6 @@ import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
-import org.virtue.VirtueTransformer;
 import org.virtue.deobfuscate.indentify.ClassIdentifier;
 import org.virtue.deobfuscate.transformer.Transformer;
 import org.virtue.deobfuscate.utility.ClassVector;
@@ -35,12 +34,13 @@ public class Injector {
 	}
 
 	public void initialization(String path) {
-		/*if (!classes.isEmpty())
+		if (!classes.isEmpty())
 			classes = new ClassVector();
 		
 		if (!entryNames.isEmpty())
 			entryNames = new ArrayList<String>();
-		try {
+		
+		/*try {
 			classes.add(new ClassGen(new ClassParser("./build/classes/org/virtue/TestData.class").parse()));
 		} catch (ClassFormatException e) {
 			// TODO Auto-generated catch block
@@ -82,7 +82,7 @@ public class Injector {
 			while (trans.hasNext()) {
 				Transformer transformer = trans.next();
 				for (ClassGen classGen : classes) {
-					transformer.deob(classGen);
+					transformer.transform(classGen);
 				}
 				transformer.finish();
 			}
@@ -106,7 +106,7 @@ public class Injector {
 	}
 
 	private void saveToJar() throws IOException {
-		FileOutputStream stream = new FileOutputStream(VirtueTransformer.getInstance().getDirectory() + "deobfuscated.jar");
+		FileOutputStream stream = new FileOutputStream(VirtueTransformer.getInstance().getDirectory() + (VirtueTransformer.getInstance().getTransformMode().equals(TransformMode.OBFUSCATE) ? "obfuscated.jar" : "deobfuscated.jar"));
 		JarOutputStream out = new JarOutputStream(stream);
 		for (ClassGen classGen : classes) {
 			JarEntry jarEntry = new JarEntry(classGen.getClassName().replace('.', '/') + ".class");

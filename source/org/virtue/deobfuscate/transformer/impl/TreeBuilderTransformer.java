@@ -13,7 +13,7 @@ import javax.swing.tree.DefaultTreeModel;
 
 import org.apache.bcel.generic.ClassGen;
 import org.apache.bcel.generic.Type;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 
 public class TreeBuilderTransformer extends Transformer {
@@ -26,7 +26,7 @@ public class TreeBuilderTransformer extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 		if (findNodeFor(classGen.getClassName(), root) != null)
 			return;
 		List<ClassGen> hierarchy = new ArrayList<ClassGen>();

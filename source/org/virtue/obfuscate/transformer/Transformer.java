@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.transformer;
+package org.virtue.obfuscate.transformer;
 
 import org.apache.bcel.generic.ClassGen;
 import org.virtue.Injector;

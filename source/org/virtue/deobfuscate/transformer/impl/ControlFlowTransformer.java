@@ -13,7 +13,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.TargetLostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 import org.virtue.deobfuscate.utility.InstructionSearcher;
 
@@ -31,7 +31,7 @@ public class ControlFlowTransformer extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 	//	if (!classGen.getClassName().equals("ej"))
 	//		return;
 		ConstantPoolGen cpg = classGen.getConstantPool();

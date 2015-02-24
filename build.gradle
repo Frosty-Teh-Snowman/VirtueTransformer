@@ -1,18 +1,27 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.8
 version = '1.0'
 
 repositories {
     mavenCentral()
+	flatDir {
+       dirs 'decompilers'
+   }
+}
+
+sourceSets {
+	main.java.srcDir 'source'
 }
 
 dependencies {
-   // compile group: 'org.ow2.asm', name: 'asm-all', version: '5.0.3'
 	compile group: 'org.apache.bcel', name: 'bcel', version: '5.2'
 	compile group: 'org.jdom', name: 'jdom', version: '2.0.2'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'
 	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.10'
-	compile group: 'org.bitbucket.mstrobel', name: 'procyon-compilertools', version: '0.5.28'
+	compile name: 'cfr_0_96'
+	compile name: 'fernflower'
+	compile name: 'jode-1.1.2-pre1'
+	compile name: 'procyon-decompiler-0.5.28'
 }

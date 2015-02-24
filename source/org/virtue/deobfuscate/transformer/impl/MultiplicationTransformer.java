@@ -29,7 +29,7 @@ import org.apache.bcel.generic.Type;
 import org.apache.bcel.generic.UnconditionalBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.virtue.deobfuscate.Injector;
+import org.virtue.Injector;
 import org.virtue.deobfuscate.transformer.Transformer;
 
 public class MultiplicationTransformer extends Transformer {
@@ -46,7 +46,7 @@ public class MultiplicationTransformer extends Transformer {
 	}
 
 	@Override
-	public void deob(ClassGen classGen) {
+	public void transform(ClassGen classGen) {
 		ConstantPoolGen cpg = classGen.getConstantPool();
 		int amount = 0;
 		for (Method m : classGen.getMethods()) {
