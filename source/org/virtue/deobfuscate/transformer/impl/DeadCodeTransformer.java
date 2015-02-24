@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,17 +17,18 @@ import org.apache.bcel.generic.UnconditionalBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
-public class DeadCodeDeobber extends Deobber {
+public class DeadCodeTransformer extends Transformer {
 	
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(DeadCodeDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(DeadCodeTransformer.class);
 	
 	private int deadCodeRemoved;
 
-	public DeadCodeDeobber(Injector injector) {
+	public DeadCodeTransformer(Injector injector) {
 		super(injector);
 	}
 

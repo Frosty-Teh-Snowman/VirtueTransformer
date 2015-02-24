@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.util;
+package org.virtue.deobfuscate.utility;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ClassGen;

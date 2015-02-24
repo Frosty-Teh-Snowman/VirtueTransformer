@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.util;
+package org.virtue.deobfuscate.utility;
 
 import java.util.ArrayList;
 import java.util.Iterator;

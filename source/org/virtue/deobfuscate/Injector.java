@@ -11,32 +11,44 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
+import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
 import org.virtue.VirtueTransformer;
-import org.virtue.deobfuscate.deobbers.Deobber;
-import org.virtue.deobfuscate.util.ClassVector;
+import org.virtue.deobfuscate.indentify.ClassIdentifier;
+import org.virtue.deobfuscate.transformer.Transformer;
+import org.virtue.deobfuscate.utility.ClassVector;
 
 public class Injector {
 	
-	private List<String> entryNames;
 	private ClassVector classes;
-	private final List<Deobber> deobbers;
-
+	private List<String> entryNames;
+	private final List<Transformer> transformers;
+	private final List<ClassIdentifier> identifiers;
+	
 	public Injector() {
 		classes = new ClassVector();
 		entryNames = new ArrayList<String>();
-		deobbers = Collections.synchronizedList(new ArrayList<Deobber>());
+		transformers = Collections.synchronizedList(new ArrayList<Transformer>());
+		identifiers = Collections.synchronizedList(new ArrayList<ClassIdentifier>());
 	}
 
 	public void initialization(String path) {
-		if (!classes.isEmpty())
+		/*if (!classes.isEmpty())
 			classes = new ClassVector();
 		
 		if (!entryNames.isEmpty())
 			entryNames = new ArrayList<String>();
-		
+		try {
+			classes.add(new ClassGen(new ClassParser("./build/classes/org/virtue/TestData.class").parse()));
+		} catch (ClassFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		try (JarInputStream in = new JarInputStream(new FileInputStream(path))) {
 			JarEntry entry;
 			while ((entry = in.getNextJarEntry()) != null) {
@@ -56,24 +68,41 @@ public class Injector {
 		}
 	}
 
-	public void registerDeobber(Deobber deobber) {
-		deobbers.add(deobber);
+	public void registerTransformer(Transformer trans) {
+		transformers.add(trans);
 	}
 
-	public void deobfuscate() throws IOException {
-		synchronized (deobbers) {
-			Iterator<Deobber> trans = deobbers.iterator();
+	public void registerTransformer(ClassIdentifier iden) {
+		identifiers.add(iden);
+	}
+	
+	public void transform() throws IOException {
+		synchronized (transformers) {
+			Iterator<Transformer> trans = transformers.iterator();
 			while (trans.hasNext()) {
-				Deobber deobber = trans.next();
+				Transformer transformer = trans.next();
 				for (ClassGen classGen : classes) {
-					deobber.deob(classGen);
+					transformer.deob(classGen);
 				}
-				deobber.finish();
+				transformer.finish();
 			}
 		}
-		deobbers.clear();
+		transformers.clear();
 		
 		saveToJar();
+	}
+	
+	public void identify() throws IOException {
+		synchronized (identifiers) {
+			Iterator<ClassIdentifier> iden = identifiers.iterator();
+			while (iden.hasNext()) {
+				ClassIdentifier identifier = iden.next();
+				for (ClassGen classGen : classes) {
+					identifier.identify(classGen);
+				}
+			}
+		}
+		identifiers.clear();
 	}
 
 	private void saveToJar() throws IOException {

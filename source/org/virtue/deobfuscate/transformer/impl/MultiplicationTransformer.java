@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -10,7 +10,10 @@ import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.BranchInstruction;
 import org.apache.bcel.generic.ClassGen;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.GETFIELD;
+import org.apache.bcel.generic.IADD;
 import org.apache.bcel.generic.IMUL;
+import org.apache.bcel.generic.IRETURN;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
@@ -19,6 +22,7 @@ import org.apache.bcel.generic.LDC;
 import org.apache.bcel.generic.LDC2_W;
 import org.apache.bcel.generic.LMUL;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.ReturnInstruction;
 import org.apache.bcel.generic.TargetLostException;
 import org.apache.bcel.generic.Type;
@@ -26,17 +30,18 @@ import org.apache.bcel.generic.UnconditionalBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
-public class MultiplicationDeobber extends Deobber {
+public class MultiplicationTransformer extends Transformer {
 	
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(MultiplicationDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(MultiplicationTransformer.class);
 	
 	private int clearedMultiplies;
 
-	public MultiplicationDeobber(Injector injector) {
+	public MultiplicationTransformer(Injector injector) {
 		super(injector);
 	}
 
@@ -130,7 +135,7 @@ public class MultiplicationDeobber extends Deobber {
 					if (o instanceof InstructionHandle) {
 						InstructionHandle otherHandle = (InstructionHandle) o;
 						Instruction otherInstruction = otherHandle.getInstruction();
-						if (!((ins instanceof IMUL && otherInstruction instanceof LDC) || (ins instanceof LMUL && otherInstruction instanceof LDC2_W)))
+						if (!((ins instanceof IMUL && otherInstruction instanceof LDC) || (ins instanceof LMUL && otherInstruction instanceof LDC2_W) ||(ins instanceof IADD && otherInstruction instanceof LDC)))
 							continue;
 						if (!toDelete.contains(handle))
 							toDelete.add(handle);

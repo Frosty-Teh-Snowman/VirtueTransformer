@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.io.IOException;
 
@@ -36,12 +36,13 @@ import org.apache.bcel.generic.MethodGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
 /**
  * @author Kyle Friz
  * @since Feb 22, 2015
  */
-public class ClassNameDeobber extends Deobber {
+public class ClassNameTransformer extends Transformer {
 
 	private int classID = 1;
 	private int interfaceID = 1;
@@ -51,14 +52,14 @@ public class ClassNameDeobber extends Deobber {
 	/**
 	 * @param injector
 	 */
-	public ClassNameDeobber(Injector injector) {
+	public ClassNameTransformer(Injector injector) {
 		super(injector);
 	}
 
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(ClassNameDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(ClassNameTransformer.class);
 
 	/* (non-Javadoc)
 	 * @see org.virtue.deobfuscate.deobbers.Deobber#deob(org.apache.bcel.generic.ClassGen)
@@ -67,7 +68,7 @@ public class ClassNameDeobber extends Deobber {
 	public void deob(ClassGen classGen) {
 		if (classGen.isInterface())
 			classGen.setClassName("Interface" + (interfaceID++));
-		else 
+		else if (!natives(classGen))	
 			classGen.setClassName("Class" + (classID++));
 		
 		ConstantPoolGen c_pool = classGen.getConstantPool();
@@ -93,6 +94,18 @@ public class ClassNameDeobber extends Deobber {
 			classGen.removeField(field);
 			classGen.addField(fieldGen.getField());
 		}
+	}
+	
+	private boolean natives(ClassGen gen) {
+		for (Field field : gen.getFields()) {
+			if (field.isNative())
+				return true;
+		}
+		for (Method method : gen.getMethods()) {
+			if (method.isNative())
+				return true;
+		}
+		return false;
 	}
 
 	/* (non-Javadoc)

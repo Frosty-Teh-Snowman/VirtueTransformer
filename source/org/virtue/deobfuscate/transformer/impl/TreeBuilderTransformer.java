@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -14,13 +14,14 @@ import javax.swing.tree.DefaultTreeModel;
 import org.apache.bcel.generic.ClassGen;
 import org.apache.bcel.generic.Type;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
-public class TreeBuilderDeobber extends Deobber {
+public class TreeBuilderTransformer extends Transformer {
 	
 	private final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
 	private final DefaultTreeModel model = new DefaultTreeModel(root);
 
-	public TreeBuilderDeobber(Injector injector) {
+	public TreeBuilderTransformer(Injector injector) {
 		super(injector);
 	}
 

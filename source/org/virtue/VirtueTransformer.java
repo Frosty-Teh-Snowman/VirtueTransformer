@@ -40,14 +40,15 @@ import org.slf4j.LoggerFactory;
 import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
 import org.virtue.deobfuscate.Injector;
-import org.virtue.deobfuscate.deobbers.ClassNameDeobber;
-import org.virtue.deobfuscate.deobbers.DeadCodeDeobber;
-import org.virtue.deobfuscate.deobbers.ExceptionTableDeobber;
-import org.virtue.deobfuscate.deobbers.IntShiftDeobber;
-import org.virtue.deobfuscate.deobbers.LongShiftDeobber;
-import org.virtue.deobfuscate.deobbers.MultiplicationDeobber;
-import org.virtue.deobfuscate.deobbers.TreeBuilderDeobber;
-import org.virtue.deobfuscate.deobbers.ZKMFlowDeobber;
+import org.virtue.deobfuscate.transformer.impl.ClassNameTransformer;
+import org.virtue.deobfuscate.transformer.impl.DeadCodeTransformer;
+import org.virtue.deobfuscate.transformer.impl.EuclideanNumberDeobber;
+import org.virtue.deobfuscate.transformer.impl.ExceptionTableTransformer;
+import org.virtue.deobfuscate.transformer.impl.IntShiftTransformer;
+import org.virtue.deobfuscate.transformer.impl.LongShiftTransformer;
+import org.virtue.deobfuscate.transformer.impl.MultiplicationTransformer;
+import org.virtue.deobfuscate.transformer.impl.TreeBuilderTransformer;
+import org.virtue.deobfuscate.transformer.impl.ControlFlowTransformer;
 import org.virtue.gamepack.ConfigCrawler;
 import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
@@ -145,6 +146,7 @@ public class VirtueTransformer {
 		this.transform_mode = TransformMode.GRAB;
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
+		this.directory = "./de_obf/local/";
 		this.crawler = new ConfigCrawler();
 		this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
@@ -163,14 +165,11 @@ public class VirtueTransformer {
 		instance = new VirtueTransformer();
 
 		/**
-		 * -t_mode= sets the transformation mode (Which stage should the program
-		 * start at) Default: GRAB -g_mode= sets the game mode (Oldschool or
-		 * Runescape3) Default: OLDSCHOOL -d_mode= sets the decompile mode
-		 * (Which decompiler should the program use) Default: JODE -secret= sets
-		 * the secret key for decrypting the gamepack (Only used when not
-		 * grabbing the current rs gamepack) -vector= sets the initialization
-		 * vector for dercypting the gamepack (Only used when not grabbing the
-		 * current rs gamepack)
+		 * -t_mode= sets the transformation mode (Which stage should the program start at) Default: GRAB
+		 * -g_mode= sets the game mode (Oldschool or Runescape3) Default: OLDSCHOOL
+		 * -d_mode= sets the decompile mode (Which decompiler should the program use) Default: JODE
+		 * -secret= sets the secret key for decrypting the gamepack (Only used when not grabbing the current rs gamepack)
+		 * -vector= sets the initialization vector for dercypting the gamepack (Only used when not grabbing the current rs gamepack)
 		 */
 		for (String option : args) {
 			if (option.startsWith("-t_mode")) {
@@ -186,14 +185,15 @@ public class VirtueTransformer {
 			}
 		}
 
-		instance.getInjector().registerDeobber(new ClassNameDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new DeadCodeDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new ExceptionTableDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new IntShiftDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new LongShiftDeobber(instance.getInjector()));
-		//instance.getInjector().registerDeobber(new MultiplicationDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new TreeBuilderDeobber(instance.getInjector()));
-		instance.getInjector().registerDeobber(new ZKMFlowDeobber(instance.getInjector()));
+		instance.getInjector().registerTransformer(new ClassNameTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new DeadCodeTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new EuclideanNumberDeobber(instance.getInjector()));
+		instance.getInjector().registerTransformer(new ExceptionTableTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new IntShiftTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new LongShiftTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new MultiplicationTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new TreeBuilderTransformer(instance.getInjector()));
+		instance.getInjector().registerTransformer(new ControlFlowTransformer(instance.getInjector()));
 		
 		instance.process();
 	}
@@ -267,7 +267,7 @@ public class VirtueTransformer {
 					else
 						getInjector().initialization(getDirectory() + "decrypted.jar");
 					
-					getInjector().deobfuscate();
+					getInjector().transform();
 				} catch (IOException e) {
 					logger.error("Error deobfuscating!", e);
 				}
@@ -278,7 +278,7 @@ public class VirtueTransformer {
 			case DECOMPILE:
 
 				try {
-			//		 getDecompiler().decompile(getDirectory() + "decrypted.jar", getDirectory() + "source/");
+					 getDecompiler().decompile(getDirectory() + "deobfuscated.jar", getDirectory() + "source/");
 				} catch (Exception e) {
 					logger.error("Error Decompiling!", e);
 				}

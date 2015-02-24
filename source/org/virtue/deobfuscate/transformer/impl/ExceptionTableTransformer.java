@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ATHROW;
@@ -14,18 +14,19 @@ import org.apache.bcel.generic.TargetLostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
-import org.virtue.deobfuscate.util.InstructionSearcher;
+import org.virtue.deobfuscate.transformer.Transformer;
+import org.virtue.deobfuscate.utility.InstructionSearcher;
 
-public class ExceptionTableDeobber extends Deobber {
+public class ExceptionTableTransformer extends Transformer {
 	
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(ExceptionTableDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(ExceptionTableTransformer.class);
 	
 	private int deletedExceptions;
 
-	public ExceptionTableDeobber(Injector injector) {
+	public ExceptionTableTransformer(Injector injector) {
 		super(injector);
 	}
 

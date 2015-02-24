@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.util.Iterator;
 
@@ -17,17 +17,18 @@ import org.apache.bcel.util.InstructionFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
-public class IntShiftDeobber extends Deobber {
+public class IntShiftTransformer extends Transformer {
 	
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(IntShiftDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(IntShiftTransformer.class);
 	
 	private int fixedShifts;
 
-	public IntShiftDeobber(Injector injector) {
+	public IntShiftTransformer(Injector injector) {
 		super(injector);
 	}
 

@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,8 +28,9 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.apache.bcel.util.InstructionFinder;
 import org.virtue.deobfuscate.Injector;
+import org.virtue.deobfuscate.transformer.Transformer;
 
-public class EuclideanNumberDeobber extends Deobber {
+public class EuclideanNumberDeobber extends Transformer {
 	private final Map<String, List<EuclideanNumberPair>> values = new HashMap<String, List<EuclideanNumberPair>>();
 	private Map<String, EuclideanNumberPair> finalValues;
 
@@ -62,7 +63,8 @@ public class EuclideanNumberDeobber extends Deobber {
 			}
 			InstructionFinder instructionFinder = new InstructionFinder(iList);
 			for (int i = 0; i < patterns.length; i++) {
-				for (Iterator<InstructionHandle[]> iterator = instructionFinder.search(patterns[i]); iterator.hasNext();) {
+				for (@SuppressWarnings("unchecked")
+				Iterator<InstructionHandle[]> iterator = instructionFinder.search(patterns[i]); iterator.hasNext();) {
 					InstructionHandle[] ih = iterator.next();
 					FieldInstruction fi = (FieldInstruction) ih[fieldIndices[i]].getInstruction();
 					String descriptor = fi.getReferenceType(cpg).toString() + "." + fi.getFieldName(cpg);
@@ -106,7 +108,7 @@ public class EuclideanNumberDeobber extends Deobber {
 	public void finish() {
 		try {
 			Map<String, EuclideanNumberPair> finalValues = new HashMap<String, EuclideanNumberPair>();
-			BufferedWriter writer = new BufferedWriter(new FileWriter(new File("out.txt")));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(new File("./de_obf/local/out.txt")));
 			for (String key : values.keySet()) {
 				List<EuclideanNumberPair> values = this.values.get(key);
 				List<EuclideanNumberPair> nonDuplicates = new ArrayList<EuclideanNumberPair>();

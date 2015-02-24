@@ -1,4 +1,4 @@
-package org.virtue.deobfuscate.deobbers;
+package org.virtue.deobfuscate.transformer.impl;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.BranchInstruction;
@@ -14,25 +14,26 @@ import org.apache.bcel.generic.TargetLostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.virtue.deobfuscate.Injector;
-import org.virtue.deobfuscate.util.InstructionSearcher;
+import org.virtue.deobfuscate.transformer.Transformer;
+import org.virtue.deobfuscate.utility.InstructionSearcher;
 
-public class ZKMFlowDeobber extends Deobber {
+public class ControlFlowTransformer extends Transformer {
 	
 	/**
 	 * The {@link Logger} instance
 	 */
-	private static Logger logger = LoggerFactory.getLogger(ZKMFlowDeobber.class);
+	private static Logger logger = LoggerFactory.getLogger(ControlFlowTransformer.class);
 	
 	private int shiftedFlows;
 
-	public ZKMFlowDeobber(Injector injector) {
+	public ControlFlowTransformer(Injector injector) {
 		super(injector);
 	}
 
 	@Override
 	public void deob(ClassGen classGen) {
-		if (!classGen.getClassName().equals("ej"))
-			return;
+	//	if (!classGen.getClassName().equals("ej"))
+	//		return;
 		ConstantPoolGen cpg = classGen.getConstantPool();
 		for (Method m : classGen.getMethods()) {
 			if (!m.getName().equals("<clinit>"))
