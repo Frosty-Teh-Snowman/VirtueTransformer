@@ -33,17 +33,9 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.bytecode.graph.hierarchy.HierarchyTree;
 import org.virtue.decompile.BytecodeDecompiler;
 import org.virtue.decompile.DecompileMode;
-import org.virtue.deobfuscate.transformer.impl.ClassNameTransformer;
-import org.virtue.deobfuscate.transformer.impl.ControlFlowTransformer;
-import org.virtue.deobfuscate.transformer.impl.DeadCodeTransformer;
-import org.virtue.deobfuscate.transformer.impl.EuclideanNumberDeobber;
-import org.virtue.deobfuscate.transformer.impl.ExceptionTableTransformer;
-import org.virtue.deobfuscate.transformer.impl.IntShiftTransformer;
-import org.virtue.deobfuscate.transformer.impl.LongShiftTransformer;
-import org.virtue.deobfuscate.transformer.impl.MultiplicationTransformer;
-import org.virtue.deobfuscate.transformer.impl.TreeBuilderTransformer;
 import org.virtue.gamepack.ConfigCrawler;
 import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
@@ -146,7 +138,7 @@ public class VirtueTransformer {
 		this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
 		this.startTime = System.currentTimeMillis();
-		this.running = false;
+		this.running = true;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -168,6 +160,7 @@ public class VirtueTransformer {
 
 		instance = new VirtueTransformer();
 
+		
 		/**
 		 * -t_mode= sets the transformation mode (Which stage should the program start at) Default: GRAB
 		 * -g_mode= sets the game mode (Oldschool or Runescape3) Default: OLDSCHOOL
@@ -200,8 +193,7 @@ public class VirtueTransformer {
 			switch (getTransformMode()) {
 			case OBFUSCATE:
 				setDirectory("./obf/");
-				
-				getInjector().registerTransformer(new org.virtue.obfuscate.transformer.impl.ClassNameTransformer(getInjector()));
+
 				getInjector().initialization(getDirectory() + "original.jar");
 				
 				try {
@@ -258,16 +250,6 @@ public class VirtueTransformer {
 				setTransformMode(TransformMode.DEOBFUSCATE);
 				break;
 			case DEOBFUSCATE:
-
-				getInjector().registerTransformer(new ClassNameTransformer(getInjector()));
-				getInjector().registerTransformer(new DeadCodeTransformer(getInjector()));
-				getInjector().registerTransformer(new EuclideanNumberDeobber(getInjector()));
-				getInjector().registerTransformer(new ExceptionTableTransformer(getInjector()));
-				getInjector().registerTransformer(new IntShiftTransformer(getInjector()));
-				getInjector().registerTransformer(new LongShiftTransformer(getInjector()));
-				getInjector().registerTransformer(new MultiplicationTransformer(getInjector()));
-				getInjector().registerTransformer(new TreeBuilderTransformer(getInjector()));
-				getInjector().registerTransformer(new ControlFlowTransformer(getInjector()));
 				
 				try {
 					if (getGameMode().equals(GameMode.OLDSCHOOL))
@@ -275,7 +257,17 @@ public class VirtueTransformer {
 					else
 						getInjector().initialization(getDirectory() + "decrypted.jar");
 					
+					getInjector().registerTransformer();
+					getInjector().registerIdentifiers();
+					
 					getInjector().transform();
+					
+					HierarchyTree hierarchyTree = new HierarchyTree(getInjector().getClasses());
+			        hierarchyTree.build();
+			      // System.out.println(hierarchyTree.toString());
+					
+					getInjector().initialization(getDirectory() + "deobfuscated.jar");
+					getInjector().identify();
 				} catch (IOException e) {
 					logger.error("Error deobfuscating!", e);
 				}
