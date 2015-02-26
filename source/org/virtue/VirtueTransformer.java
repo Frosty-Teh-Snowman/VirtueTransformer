@@ -31,8 +31,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import net.lemonrs.lemonpicker.Main;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import org.virtue.bytecode.graph.hierarchy.HierarchyTree;
@@ -92,7 +90,7 @@ public class VirtueTransformer {
 	/**
 	 * The injector
 	 */
-	//private Injector injector;
+	private Injector injector;
 	
 	/**
 	 * The bytecode decompiler
@@ -137,7 +135,7 @@ public class VirtueTransformer {
 		this.decompile_mode = DecompileMode.JODE;
 		this.directory = "./de_obf/local/";
 		this.crawler = new ConfigCrawler();
-		//this.injector = new Injector();
+		this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
 		this.startTime = System.currentTimeMillis();
 		this.running = true;
@@ -256,25 +254,17 @@ public class VirtueTransformer {
 			case DEOBFUSCATE:
 				
 				if (getGameMode().equals(GameMode.OLDSCHOOL))
-					Main.main(new String[] { getDirectory() + "gamepack.jar", getDirectory() + "deobfuscated.jar" });
-				else
-					Main.main(new String[] { getDirectory() + "decrypted.jar", getDirectory() + "deobfuscated.jar" });
-				/*if (getGameMode().equals(GameMode.OLDSCHOOL))
 					getInjector().initialization(getDirectory() + "gamepack.jar");
 				else
 					getInjector().initialization(getDirectory() + "decrypted.jar");
 				
-				getInjector().registerTransformer();
+				getInjector().registerTransformers();
 				getInjector().registerIdentifiers();
 				
-				getInjector().transform();
-				
-				HierarchyTree hierarchyTree = new HierarchyTree(getInjector().getClasses());
-				hierarchyTree.build();
-     // System.out.println(hierarchyTree.toString());
+				getInjector().transform(getDirectory() + "deobfuscated.jar");
 				
 				getInjector().initialization(getDirectory() + "deobfuscated.jar");
-				getInjector().identify();*/
+				getInjector().identify();
 				
 				/* TODO: Deobfuscate a jar */
 				setTransformMode(TransformMode.DECOMPILE);
@@ -366,16 +356,16 @@ public class VirtueTransformer {
 	/**
 	 * @return the injector
 	 */
-	/*public Injector getInjector() {
+	public Injector getInjector() {
 		return injector;
 	}
 
-	*//**
+	/**
 	 * @param injector the injector to set
-	 *//*
+	 */
 	public void setInjector(Injector injector) {
 		this.injector = injector;
-	}*/
+	}
 
 	/**
 	 * @return the crawler
