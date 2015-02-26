@@ -1,4 +1,4 @@
-package org.virtue;
+/*package org.virtue;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,9 +58,9 @@ import org.virtue.deobfuscate.transformers.UnusedClassRemovalTransform;
 public class Injector {
 	
 
-	/**
+	*//**
 	 * The {@link Logger} instance
-	 */
+	 *//*
 	private static Logger logger = LoggerFactory.getLogger(Injector.class);
 	
 	public List<ClassElement> classes;
@@ -77,7 +77,7 @@ public class Injector {
 		if (!classes.isEmpty())
 			classes = new ArrayList<ClassElement>();
 		
-		/*try {
+		try {
 			classes.add(new ClassGen(new ClassParser("./build/classes/org/virtue/TestData.class").parse()));
 		} catch (ClassFormatException e) {
 			// TODO Auto-generated catch block
@@ -85,7 +85,7 @@ public class Injector {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 		try (JarFile jar = new JarFile(path)) {
             Enumeration<JarEntry> enumeration = jar.entries();
             while (enumeration.hasMoreElements()) {
@@ -216,4 +216,4 @@ public class Injector {
 		return classes;
 	}
     
-}
+}*/
