@@ -3,7 +3,7 @@ package org.virtue.bytecode.graph;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.graph.method.EntryPoint;
 import org.virtue.bytecode.graph.method.MethodCall;
 
@@ -24,7 +24,7 @@ public class MethodCallGraph {
         List<MethodCall> toVisit = new LinkedList<>();
         for (EntryPoint entry : entryPoints) {
             for(MethodCall call : entry.calls()) {
-                if(VirtueTransformer.getInstance().getInjector().get(call.node().owner) == null || visited(call)) {
+                if(Injector.get(call.node().owner) == null || visited(call)) {
                     continue;
                 }
                 toVisit.add(call);
@@ -40,7 +40,7 @@ public class MethodCallGraph {
                 }
                 visited.add(next);
                 for(MethodCall call : next.calls()) {
-                    if(!visited(call) && VirtueTransformer.getInstance().getInjector().get(call.node().owner) != null) {
+                    if(!visited(call) && Injector.get(call.node().owner) != null) {
                         calls.add(call);
                         toVisit.add(call);
                     }

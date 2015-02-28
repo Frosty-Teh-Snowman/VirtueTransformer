@@ -90,7 +90,7 @@ public class VirtueTransformer {
 	/**
 	 * The injector
 	 */
-	private Injector injector;
+	//private Injector injector;
 	
 	/**
 	 * The bytecode decompiler
@@ -133,9 +133,9 @@ public class VirtueTransformer {
 		this.transform_mode = TransformMode.GRAB;
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
-		this.directory = "./de_obf/local/";
+		this.directory = "./build/transformer/de_obf/oldschool/73/";
 		this.crawler = new ConfigCrawler();
-		this.injector = new Injector();
+		//this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
 		this.startTime = System.currentTimeMillis();
 		this.running = true;
@@ -194,7 +194,7 @@ public class VirtueTransformer {
 		while (isRunning()) {
 			switch (getTransformMode()) {
 			case OBFUSCATE:
-				setDirectory("./obf/");
+				setDirectory("./build/transformer/obf/");
 
 				//getInjector().initialization(getDirectory() + "original.jar");
 				
@@ -217,7 +217,7 @@ public class VirtueTransformer {
 
 					setJS5Worker(new JS5Worker(getCrawler().getCodebase(), getCrawler().getConnectionKey()));
 					getJS5Worker().connect(getGameMode().equals(GameMode.OLDSCHOOL) ? 73 : 836, 1);
-					setDirectory("./de_obf/" + (getGameMode().equals(GameMode.OLDSCHOOL) ? "oldschool/" : "rs3/")
+					setDirectory("./build/transformer/de_obf/" + (getGameMode().equals(GameMode.OLDSCHOOL) ? "oldschool/" : "rs3/")
 							+ getJS5Worker().identifyVersion() + "/");
 
 					File file = new File(getDirectory());
@@ -254,17 +254,25 @@ public class VirtueTransformer {
 			case DEOBFUSCATE:
 				
 				if (getGameMode().equals(GameMode.OLDSCHOOL))
+					Injector.deobfuscate(new String[] { getDirectory() + "gamepack.jar", getDirectory() + "deobfuscated.jar" });
+				else
+					Injector.deobfuscate(new String[] { getDirectory() + "decrypted.jar", getDirectory() + "deobfuscated.jar" });
+				/*if (getGameMode().equals(GameMode.OLDSCHOOL))
 					getInjector().initialization(getDirectory() + "gamepack.jar");
 				else
 					getInjector().initialization(getDirectory() + "decrypted.jar");
 				
-				getInjector().registerTransformers();
+				getInjector().registerTransformer();
 				getInjector().registerIdentifiers();
 				
-				getInjector().transform(getDirectory() + "deobfuscated.jar");
+				getInjector().transform();
+				
+				HierarchyTree hierarchyTree = new HierarchyTree(getInjector().getClasses());
+				hierarchyTree.build();
+     // System.out.println(hierarchyTree.toString());
 				
 				getInjector().initialization(getDirectory() + "deobfuscated.jar");
-				getInjector().identify();
+				getInjector().identify();*/
 				
 				/* TODO: Deobfuscate a jar */
 				setTransformMode(TransformMode.DECOMPILE);
@@ -356,16 +364,16 @@ public class VirtueTransformer {
 	/**
 	 * @return the injector
 	 */
-	public Injector getInjector() {
+	/*public Injector getInjector() {
 		return injector;
 	}
 
-	/**
+	*//**
 	 * @param injector the injector to set
-	 */
+	 *//*
 	public void setInjector(Injector injector) {
 		this.injector = injector;
-	}
+	}*/
 
 	/**
 	 * @return the crawler

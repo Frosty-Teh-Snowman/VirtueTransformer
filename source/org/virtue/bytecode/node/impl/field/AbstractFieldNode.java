@@ -1,7 +1,7 @@
 package org.virtue.bytecode.node.impl.field;
 
 import org.objectweb.asm.tree.FieldInsnNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.FieldElement;
 import org.virtue.bytecode.node.impl.BasicNode;
@@ -31,7 +31,7 @@ public abstract class AbstractFieldNode extends BasicNode<FieldInsnNode> {
     }
 
     public ClassElement ownerClass() {
-        return VirtueTransformer.getInstance().getInjector().get(owner());
+        return Injector.get(owner());
     }
 
     public FieldElement field() {

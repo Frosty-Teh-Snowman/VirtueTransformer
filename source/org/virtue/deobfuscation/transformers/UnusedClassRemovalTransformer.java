@@ -1,9 +1,14 @@
 package org.virtue.deobfuscation.transformers;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.virtue.Injector;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceMethodVisitor;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.node.impl.field.StaticFieldCallNode;
@@ -22,24 +27,31 @@ import org.virtue.bytecode.node.impl.type.NewNode;
 import org.virtue.bytecode.tree.method.MethodVisitor;
 import org.virtue.deobfuscation.Transformer;
 import org.virtue.utility.ASMUtility;
+import org.virtue.utility.RegexInsnFinder;
+
+import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 
 /**
  * @author : const_
  */
 public class UnusedClassRemovalTransformer extends Transformer {
 
-    /**
-	 * @param injector
-	 */
-	public UnusedClassRemovalTransformer(Injector injector) {
-		super(injector);
-	}
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
         final List<String> used = new LinkedList<>();
         for(ClassElement element : elements) {
             for(MethodElement method : element.methods()) {
+            	RegexInsnFinder finder = new RegexInsnFinder(method.node());
+            	AbstractInsnNode[] nodes = finder.find("ICONST_0 ((LSHL)|(LSHR))");
+            	    Printer printer = new Textifier();
+            	    TraceMethodVisitor mp = new TraceMethodVisitor(printer); 
+            	for (AbstractInsnNode node : nodes) {
+        	        node.accept(mp);
+        	        StringWriter sw = new StringWriter();
+        	        printer.print(new PrintWriter(sw));
+        	        printer.getText().clear();
+        	        System.out.println("Node: " + sw.toString());
+            	}
                 MethodVisitor visitor = new MethodVisitor(method) {
 
                     @Override

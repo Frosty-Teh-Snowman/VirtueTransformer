@@ -17,16 +17,7 @@ import org.virtue.deobfuscation.Transformer;
  * @author : const_
  */
 public class UnusedMethodRemovalTransformer extends Transformer {
-	
-    /**
-	 * @param getInjector()
-	 */
-	public UnusedMethodRemovalTransformer(Injector injector) {
-		super(injector);
-	}
-
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
 
         List<EntryPoint> entries = new LinkedList<>();
@@ -36,8 +27,8 @@ public class UnusedMethodRemovalTransformer extends Transformer {
                 entries.add(new EntryPoint(method));
             }
         }
-        entries.add(new EntryPoint(getInjector().get("client").findMethod("init", "()V")));
-        entries.add(new EntryPoint(getInjector().get(getInjector().get("client").node().superName).findMethod("start", "()V")));
+        entries.add(new EntryPoint(Injector.get("client").findMethod("init", "()V")));
+        entries.add(new EntryPoint(Injector.get(Injector.get("client").node().superName).findMethod("start", "()V")));
         MethodCallGraph graph = new MethodCallGraph(entries);
         graph.build();
         List<MethodNode> remove = new LinkedList<>();

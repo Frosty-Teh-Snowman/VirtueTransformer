@@ -7,7 +7,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.deobfuscation.Transformer;
@@ -17,14 +16,7 @@ import org.virtue.deobfuscation.Transformer;
  */
 public class IllegalStateExceptionRemovalTransformer extends Transformer {
 
-    /**
-	 * @param injector
-	 */
-	public IllegalStateExceptionRemovalTransformer(Injector injector) {
-		super(injector);
-	}
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
         List<AbstractInsnNode> remove = new LinkedList<>();
         for (ClassElement element : elements) {

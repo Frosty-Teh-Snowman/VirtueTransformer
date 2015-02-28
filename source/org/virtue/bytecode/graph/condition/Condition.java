@@ -5,7 +5,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.FieldElement;
 import org.virtue.bytecode.node.AbstractNode;
@@ -194,7 +194,7 @@ public class Condition<T> {
         }
         FieldElement element = null;
         if (field != null) {
-            ClassElement owner = VirtueTransformer.getInstance().getInjector().get(field.owner);
+            ClassElement owner = Injector.get(field.owner);
             if (owner != null) {
                 element = owner.findField(field.name);
             }

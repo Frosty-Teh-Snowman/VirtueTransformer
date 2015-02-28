@@ -2,7 +2,6 @@ package org.virtue.deobfuscation;
 
 import java.util.List;
 
-import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 
 /**
@@ -14,12 +13,6 @@ public abstract class Transformer {
     private int total;
     private long exec;
 
-    protected Injector injector;
-    
-    public Transformer(Injector injector) {
-    	this.injector = injector;
-    }
-    
     public void execute(List<ClassElement> elements) {
         long start = System.currentTimeMillis();
         transform(elements);
@@ -53,9 +46,5 @@ public abstract class Transformer {
 
     public long exec() {
         return exec;
-    }
-    
-    protected Injector getInjector() {
-    	return injector;
     }
 }

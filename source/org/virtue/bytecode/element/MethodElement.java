@@ -14,7 +14,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.graph.ControlFlowGraph;
 import org.virtue.bytecode.graph.flow.Block;
 import org.virtue.bytecode.node.AbstractNode;
@@ -384,12 +384,12 @@ public class MethodElement {
     }
 
     public boolean isInherited() {
-        ClassElement super_ = VirtueTransformer.getInstance().getInjector().get(parent.node().superName);
+        ClassElement super_ = Injector.get(parent.node().superName);
         while (super_ != null) {
             if (super_.findMethod(name(), desc()) != null) {
                 return true;
             }
-            super_ = VirtueTransformer.getInstance().getInjector().get(super_.node().superName);
+            super_ = Injector.get(super_.node().superName);
         }
         return false;
     }

@@ -8,7 +8,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.graph.hierarchy.HierarchyBranch;
 
 /**
@@ -71,7 +71,7 @@ public class ClassElement {
                     return field;
                 }
             }
-            super_ = VirtueTransformer.getInstance().getInjector().get(super_.node().superName);
+            super_ = Injector.get(super_.node().superName);
         }
         return null;
     }

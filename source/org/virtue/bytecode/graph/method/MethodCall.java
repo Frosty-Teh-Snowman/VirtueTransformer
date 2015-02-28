@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.objectweb.asm.tree.MethodInsnNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.node.impl.method.DynamicMethodCallNode;
@@ -27,19 +27,19 @@ public class MethodCall {
     public MethodCall(MethodInsnNode node, MethodCall parent) {
         this.node = node;
         this.parent = parent;
-        ClassElement super_ = VirtueTransformer.getInstance().getInjector().get(node.owner);
+        ClassElement super_ = Injector.get(node.owner);
         while (element == null && super_ != null) {
             element = super_.findMethod(node.name, node.desc);
-            super_ = VirtueTransformer.getInstance().getInjector().get(super_.node().superName);
+            super_ = Injector.get(super_.node().superName);
         }
     }
 
     public MethodCall(MethodInsnNode node) {
         this.node = node;
-        ClassElement super_ = VirtueTransformer.getInstance().getInjector().get(node.owner);
+        ClassElement super_ = Injector.get(node.owner);
         while (element == null && super_ != null) {
             element = super_.findMethod(node.name, node.desc);
-            super_ = VirtueTransformer.getInstance().getInjector().get(super_.node().superName);
+            super_ = Injector.get(super_.node().superName);
         }
     }
 

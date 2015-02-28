@@ -2,12 +2,12 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
-version = '1.0'
+version = '1.1'
 
 repositories {
     mavenCentral()
 	flatDir {
-       dirs 'decompilers'
+       dirs 'build/transformer/decompilers'
    }
 }
 
@@ -27,32 +27,44 @@ dependencies {
 	compile name: 'procyon-decompiler-0.5.28'
 }
 
+task deploy(type: Jar) {
+  description 'Packages Virtue Transformer into a deployable jar'
+	manifest.attributes "Main-Class": "org.virtue.VirtueTransformer"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 task obfuscate(type: JavaExec, dependsOn: classes) {
+  description 'Obfuscates a jar in the build/transformer/obf/ directory'
   main = 'org.virtue.VirtueTransformer'
   args = "-t_mode=0".split().toList()
-  classpath sourceSets.main.runtimeDir
+  classpath sourceSets.main.runtimeClasspath
 }
 
 task grab(type: JavaExec, dependsOn: classes) {
+  description 'Grabs a gamepack/parameters from the rs website'
   main = 'org.virtue.VirtueTransformer'
   args = "-t_mode=1 -d_mode=0".split().toList()
-  classpath sourceSets.main.runtimeDir
+  classpath sourceSets.main.runtimeClasspath
 }
 
 task decrypt(type: JavaExec, dependsOn: classes) {
+  description 'Decrypts a gamepack in the build/transformer/de_obf/local/ directory'
   main = 'org.virtue.VirtueTransformer'
   args = "-t_mode=2 -d_mode=0".split().toList()
-  classpath sourceSets.main.runtimeDir
+  classpath sourceSets.main.runtimeClasspath
 }
 
 task deobfuscate(type: JavaExec, dependsOn: classes) {
+  description 'Deobbfuscates a jar in the build/transformer/de_obf/local/ directory'
   main = 'org.virtue.VirtueTransformer'
   args = "-t_mode=3 -d_mode=0".split().toList()
-  classpath sourceSets.main.runtimeDir
+  classpath sourceSets.main.runtimeClasspath
 }
 
 task decompile(type: JavaExec, dependsOn: classes) {
+  description 'Decompiles a jar in the build/transformer/de_obf/local/ directory'
   main = 'org.virtue.VirtueTransformer'
   args = "-t_mode=4 -d_mode=0".split().toList()
-  classpath sourceSets.main.runtimeDir
+  classpath sourceSets.main.runtimeClasspath
 }

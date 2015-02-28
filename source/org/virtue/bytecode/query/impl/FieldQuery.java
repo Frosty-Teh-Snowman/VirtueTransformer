@@ -3,7 +3,7 @@ package org.virtue.bytecode.query.impl;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.FieldElement;
 import org.virtue.bytecode.element.MethodElement;
@@ -18,7 +18,7 @@ public class FieldQuery extends AbstractQuery<FieldElement, FieldQuery> {
     private List<FieldElement> fields = new LinkedList<>();
 
     public FieldQuery() {
-        for (ClassElement element : VirtueTransformer.getInstance().getInjector().getElements()) {
+        for (ClassElement element : Injector.elements) {
             fields.addAll(element.fields());
         }
     }

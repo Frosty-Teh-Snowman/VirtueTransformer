@@ -1,6 +1,6 @@
 package org.virtue.utility;
 
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.node.AbstractNode;
 import org.virtue.bytecode.node.impl.operand.PushNode;
@@ -13,7 +13,7 @@ import org.virtue.bytecode.tree.method.MethodVisitor;
 public class RevisionFinder {
 
     public static int find() {
-        MethodQuery query = new MethodQuery(VirtueTransformer.getInstance().getInjector().get("client"));
+        MethodQuery query = new MethodQuery(Injector.get("client"));
         final Value<Integer> value = new Value<>();
         for (MethodElement element : query.constant(765, 503)) {
             final Flag width = new Flag();

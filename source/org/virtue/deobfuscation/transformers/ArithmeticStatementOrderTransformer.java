@@ -5,7 +5,6 @@ import java.util.List;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.deobfuscation.Transformer;
@@ -15,14 +14,7 @@ import org.virtue.deobfuscation.Transformer;
  */
 public class ArithmeticStatementOrderTransformer extends Transformer {
 
-    /**
-	 * @param injector
-	 */
-	public ArithmeticStatementOrderTransformer(Injector injector) {
-		super(injector);
-	}
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
         for (ClassElement element : elements) {
             for (MethodElement method : element.methods()) {

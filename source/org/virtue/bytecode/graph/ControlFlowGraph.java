@@ -1,5 +1,6 @@
 package org.virtue.bytecode.graph;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.objectweb.asm.tree.JumpInsnNode;
 import org.virtue.Injector;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.graph.flow.Block;
+import org.virtue.utility.ASMUtility;
 
 /**
  * @author : const_
@@ -20,9 +22,8 @@ public class ControlFlowGraph {
     private List<Block> ordered = new LinkedList<>();
 
     public static void main(String[] args) {
-        Injector inj = new Injector();
-        inj.initialization("./gamepack.jar");
-        ControlFlowGraph graph = new ControlFlowGraph(inj.get("client").findMethod("ho", "(III)V"));
+        Injector.elements = ASMUtility.load(new File("./gamepack.jar"));
+        ControlFlowGraph graph = new ControlFlowGraph(Injector.get("client").findMethod("ho", "(III)V"));
         graph.build();
         for (int i = 0; i < graph.ordered.size(); i++) {
             Block block = graph.ordered.get(i);

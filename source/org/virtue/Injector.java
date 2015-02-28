@@ -1,121 +1,87 @@
 package org.virtue;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.graph.hierarchy.HierarchyTree;
 import org.virtue.deobfuscation.AbstractClassIdentifier;
 import org.virtue.deobfuscation.Transformer;
-import org.virtue.deobfuscation.identifiers.ClientIdentifier;
-import org.virtue.deobfuscation.identifiers.FacadeIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.CacheIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.ModelIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.WidgetIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.WidgetNodeIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.definition.ItemDefinitionIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.definition.NpcDefinitionIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.definition.ObjectDefinitionIdentifier;
-import org.virtue.deobfuscation.identifiers.cache.definition.PlayerDefinitionIdentifier;
-import org.virtue.deobfuscation.identifiers.input.KeyboardIdentifier;
-import org.virtue.deobfuscation.identifiers.input.MouseIdentifier;
-import org.virtue.deobfuscation.identifiers.net.FileOnDiskIdentifier;
-import org.virtue.deobfuscation.identifiers.net.SocketIdentifier;
-import org.virtue.deobfuscation.identifiers.net.StreamIdentifier;
-import org.virtue.deobfuscation.identifiers.node.BagIdentifier;
-import org.virtue.deobfuscation.identifiers.node.CacheableNodeIdentifier;
-import org.virtue.deobfuscation.identifiers.node.DequeIdentifier;
-import org.virtue.deobfuscation.identifiers.node.NodeIdentifier;
-import org.virtue.deobfuscation.identifiers.node.QueueIdentifier;
-import org.virtue.deobfuscation.identifiers.renderable.ActorIdentifier;
-import org.virtue.deobfuscation.identifiers.renderable.LootIdentifier;
-import org.virtue.deobfuscation.identifiers.renderable.NpcIdentifier;
-import org.virtue.deobfuscation.identifiers.renderable.PlayerIdentifier;
-import org.virtue.deobfuscation.identifiers.renderable.RenderableIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.CollisionMapIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.RegionIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.TileIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.object.BoundaryObjectIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.object.GameObjectIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.object.GroundLayerIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.object.GroundObjectIdentifier;
-import org.virtue.deobfuscation.identifiers.scene.object.WallObjectIdentifier;
+import org.virtue.deobfuscation.indentifiers.ClientIdentifier;
+import org.virtue.deobfuscation.indentifiers.FacadeIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.CacheIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.ModelIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.WidgetIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.WidgetNodeIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.definition.ItemDefinitionIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.definition.NpcDefinitionIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.definition.ObjectDefinitionIdentifier;
+import org.virtue.deobfuscation.indentifiers.cache.definition.PlayerDefinitionIdentifier;
+import org.virtue.deobfuscation.indentifiers.input.KeyboardIdentifier;
+import org.virtue.deobfuscation.indentifiers.input.MouseIdentifier;
+import org.virtue.deobfuscation.indentifiers.net.FileOnDiskIdentifier;
+import org.virtue.deobfuscation.indentifiers.net.SocketIdentifier;
+import org.virtue.deobfuscation.indentifiers.net.StreamIdentifier;
+import org.virtue.deobfuscation.indentifiers.node.BagIdentifier;
+import org.virtue.deobfuscation.indentifiers.node.CacheableNodeIdentifier;
+import org.virtue.deobfuscation.indentifiers.node.DequeIdentifier;
+import org.virtue.deobfuscation.indentifiers.node.NodeIdentifier;
+import org.virtue.deobfuscation.indentifiers.node.QueueIdentifier;
+import org.virtue.deobfuscation.indentifiers.renderable.ActorIdentifier;
+import org.virtue.deobfuscation.indentifiers.renderable.LootIdentifier;
+import org.virtue.deobfuscation.indentifiers.renderable.NpcIdentifier;
+import org.virtue.deobfuscation.indentifiers.renderable.PlayerIdentifier;
+import org.virtue.deobfuscation.indentifiers.renderable.RenderableIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.CollisionMapIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.RegionIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.TileIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.object.BoundaryObjectIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.object.GameObjectIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.object.GroundLayerIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.object.GroundObjectIdentifier;
+import org.virtue.deobfuscation.indentifiers.scene.object.WallObjectIdentifier;
 import org.virtue.deobfuscation.transformers.ArithmeticStatementOrderTransformer;
 import org.virtue.deobfuscation.transformers.IllegalStateExceptionRemovalTransformer;
 import org.virtue.deobfuscation.transformers.UnusedClassRemovalTransformer;
 import org.virtue.utility.ASMUtility;
-import org.virtue.utility.RevisionFinder;
 import org.virtue.utility.Timer;
 
 public class Injector {
 
-    private List<ClassElement> elements;
-    private HierarchyTree hierarchyTree;
-    private List<AbstractClassIdentifier> classIdentifiers;
-    private List<Transformer> transformers;
+	/**
+	 * The {@link Logger} instance
+	 */
+	private static Logger logger = LoggerFactory.getLogger(Injector.class);
+	
+    public static List<ClassElement> elements;
+    public static HierarchyTree hierarchyTree;
+    public static List<AbstractClassIdentifier> classIdentifiers;
+    public static List<Transformer> transformers;
 
-    private int totalFields, foundFields;
-    
-    public Injector() {
-    	elements = new ArrayList<ClassElement>();
-    	classIdentifiers = new LinkedList<AbstractClassIdentifier>();
-    	transformers = new LinkedList<Transformer>();
-    }
-    
-    public void initialization(String path) {
-    	elements = ASMUtility.load(new File(path));
-    }
+    public static int totalFields, foundFields;
 
-    public void transform(String to) {
-        for (Transformer transform : transformers) {
-            transform.execute(elements);
-            System.out.println(transform.result());
-        }
-        ASMUtility.save(new File(to), elements);
-    }
-    
-    public void identify() {
-        for (AbstractClassIdentifier ident : classIdentifiers) {
-            ident.run();
-        }
-        for (AbstractClassIdentifier ident : classIdentifiers) {
-            ident.runFields();
-        }
-        for(AbstractClassIdentifier ident : classIdentifiers) {
-            System.out.println(ident.format());
-        }
-    }
-    
-    public void deobfuscate(String from, String to) {
+    public static void deobfuscate(String[] args) {
         Timer timer = new Timer();
         transformers = new LinkedList<>();
-        registerTransformers();
-        registerIdentifiers();
-        System.out.println("\t\tLemonPicker initialized...");
-        System.out.println("\t\tFinding tree...");
+        initTransofmers();
+        classIdentifiers = new LinkedList<>();
+        initIdentifiers();
         timer.start();
-        elements = ASMUtility.load(new File(from));
-        System.out.println("\t\tLocated tree with " + elements.size() + " lemons in " + timer.clock() + "ms");
-        int revision = RevisionFinder.find();
-        System.out.println("\t\tMeasured tree with a height of " + revision + " meters");
-        System.out.println("\t\tThrowing away rotten lemons...");
+        elements = ASMUtility.load(new File(args[0]));
+        logger.info("Loaded " + elements.size() + " Class(es) in " + timer.clock() + "ms");
         for (Transformer transform : transformers) {
             transform.execute(elements);
             System.out.println(transform.result());
         }
-        System.out.println("\t\tFinished throwing away rotten lemons...");
-        ASMUtility.save(new File(to), elements);
-        System.out.println("\t\tReplanting tree...");
-        elements = ASMUtility.load(new File(to));
-        System.out.println("\t\tLocating lemons...");
+        ASMUtility.save(new File(args[1]), elements);
+        elements = ASMUtility.load(new File(args[1]));
         timer.start();
         hierarchyTree = new HierarchyTree(elements);
         hierarchyTree.build();
-       // System.out.println(hierarchyTree.toString(this));
-        System.out.println("\t\tConstructed graph of lemons in " + timer.clock() + "ms");
-        System.out.println("\t\tBeginning to name lemons and their seeds...");
+       // System.out.println(hierarchyTree.toString());
         timer.start();
         for (AbstractClassIdentifier ident : classIdentifiers) {
             ident.run();
@@ -133,59 +99,59 @@ public class Injector {
             }
             System.out.println(ident.format());
         }
-        System.out.println("\t\tNamed " + found + " out of " + classIdentifiers.size() + " lemons in " + finish + "ms.");
-        System.out.println("\t\tNamed " + foundFields + " out of " + totalFields + " seeds in " + fieldsFinish + "ms.");
+        logger.info("Named " + found + " out of " + classIdentifiers.size() + " Class(es) in " + finish + "ms.");
+        logger.info("Named " + foundFields + " out of " + totalFields + " Field(s) in " + fieldsFinish + "ms.");
     }
     
-    public void registerTransformers() {
-        transformers.add(new IllegalStateExceptionRemovalTransformer(this));
-        transformers.add(new UnusedClassRemovalTransformer(this));
-        transformers.add(new ArithmeticStatementOrderTransformer(this));
+    private static void initTransofmers() {
+        transformers.add(new IllegalStateExceptionRemovalTransformer());
+     //   TRANSFORMS.add(new UnusedFieldRemovalTransform());
+        transformers.add(new UnusedClassRemovalTransformer());
+        // TRANSFORMS.add(new UnusedMethodRemovalTransform());
+        transformers.add(new ArithmeticStatementOrderTransformer());
+        //   TRANSFORMS.add(new OpaquePredicateRemovalTransform());
+        //TRANSFORMS.add(new ControlFlowTransform());
     }
 
-    public void registerIdentifiers() {
-        classIdentifiers.add(new ClientIdentifier(this));
-        classIdentifiers.add(new NodeIdentifier(this));
-        classIdentifiers.add(new CacheableNodeIdentifier(this));
-        classIdentifiers.add(new DequeIdentifier(this));
-        classIdentifiers.add(new QueueIdentifier(this));
-        classIdentifiers.add(new BagIdentifier(this));
-        classIdentifiers.add(new CacheIdentifier(this));
-        classIdentifiers.add(new StreamIdentifier(this));
-        classIdentifiers.add(new SocketIdentifier(this));
-        classIdentifiers.add(new FileOnDiskIdentifier(this));
-        classIdentifiers.add(new PlayerIdentifier(this));
-        classIdentifiers.add(new NpcIdentifier(this));
-        classIdentifiers.add(new ActorIdentifier(this));
-        classIdentifiers.add(new RenderableIdentifier(this));
-        classIdentifiers.add(new ModelIdentifier(this));
-        classIdentifiers.add(new LootIdentifier(this));
-        classIdentifiers.add(new WidgetIdentifier(this));
-        classIdentifiers.add(new NpcDefinitionIdentifier(this));
-        classIdentifiers.add(new PlayerDefinitionIdentifier(this));
-        classIdentifiers.add(new ItemDefinitionIdentifier(this));
-        classIdentifiers.add(new ObjectDefinitionIdentifier(this));
-        classIdentifiers.add(new RegionIdentifier(this));
-        classIdentifiers.add(new TileIdentifier(this));
-        classIdentifiers.add(new GameObjectIdentifier(this));
-        classIdentifiers.add(new WallObjectIdentifier(this));
-        classIdentifiers.add(new BoundaryObjectIdentifier(this));
-        classIdentifiers.add(new GroundObjectIdentifier(this));
-        classIdentifiers.add(new GroundLayerIdentifier(this));
-        classIdentifiers.add(new CollisionMapIdentifier(this));
-        classIdentifiers.add(new LootIdentifier(this));
-        classIdentifiers.add(new WidgetNodeIdentifier(this));
-        classIdentifiers.add(new MouseIdentifier(this));
-        classIdentifiers.add(new KeyboardIdentifier(this));
-        classIdentifiers.add(new FacadeIdentifier(this));
+    private static void initIdentifiers() {
+        classIdentifiers.add(new ClientIdentifier());
+        classIdentifiers.add(new NodeIdentifier());
+        classIdentifiers.add(new CacheableNodeIdentifier());
+        classIdentifiers.add(new DequeIdentifier());
+        classIdentifiers.add(new QueueIdentifier());
+        classIdentifiers.add(new BagIdentifier());
+        classIdentifiers.add(new CacheIdentifier());
+        classIdentifiers.add(new StreamIdentifier());
+        classIdentifiers.add(new SocketIdentifier());
+        classIdentifiers.add(new FileOnDiskIdentifier());
+        classIdentifiers.add(new PlayerIdentifier());
+        classIdentifiers.add(new NpcIdentifier());
+        classIdentifiers.add(new ActorIdentifier());
+        classIdentifiers.add(new RenderableIdentifier());
+        classIdentifiers.add(new ModelIdentifier());
+        classIdentifiers.add(new LootIdentifier());
+        classIdentifiers.add(new WidgetIdentifier());
+        classIdentifiers.add(new NpcDefinitionIdentifier());
+        classIdentifiers.add(new PlayerDefinitionIdentifier());
+        classIdentifiers.add(new ItemDefinitionIdentifier());
+        classIdentifiers.add(new ObjectDefinitionIdentifier());
+        classIdentifiers.add(new RegionIdentifier());
+        classIdentifiers.add(new TileIdentifier());
+        classIdentifiers.add(new GameObjectIdentifier());
+        classIdentifiers.add(new WallObjectIdentifier());
+        classIdentifiers.add(new BoundaryObjectIdentifier());
+        classIdentifiers.add(new GroundObjectIdentifier());
+        classIdentifiers.add(new GroundLayerIdentifier());
+        classIdentifiers.add(new CollisionMapIdentifier());
+        classIdentifiers.add(new LootIdentifier());
+        classIdentifiers.add(new WidgetNodeIdentifier());
+        classIdentifiers.add(new MouseIdentifier());
+        classIdentifiers.add(new KeyboardIdentifier());
+        classIdentifiers.add(new FacadeIdentifier());
     }
     
-    public List<ClassElement> getElements() {
-    	return elements;
-    }
-
     @SuppressWarnings("unchecked")
-	public <T extends AbstractClassIdentifier>  T get(Class<T> clazz) {
+	public static <T extends AbstractClassIdentifier>  T get(Class<T> clazz) {
         for(AbstractClassIdentifier identifier : classIdentifiers) {
             if(identifier.getClass().equals(clazz)) {
                 return (T) identifier;
@@ -194,7 +160,7 @@ public class Injector {
         return null;
     }
 
-    public ClassElement get(String name) {
+    public static ClassElement get(String name) {
         for (ClassElement element : elements) {
             if (element.name().equals(name)) {
                 return element;

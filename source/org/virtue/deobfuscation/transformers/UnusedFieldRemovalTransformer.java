@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.objectweb.asm.tree.FieldNode;
-import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.node.impl.field.StaticFieldCallNode;
@@ -19,14 +18,7 @@ import org.virtue.deobfuscation.Transformer;
 public class UnusedFieldRemovalTransformer extends Transformer {
 
 
-    /**
-	 * @param injector
-	 */
-	public UnusedFieldRemovalTransformer(Injector injector) {
-		super(injector);
-	}
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
         final List<UsedField> used = new LinkedList<>();
         List<FieldNode> remove = new LinkedList<>();

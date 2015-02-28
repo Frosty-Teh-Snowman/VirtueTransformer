@@ -16,12 +16,6 @@ public abstract class AbstractClassIdentifier {
     private List<AbstractFieldIdentifier> fieldIdentifiers = new LinkedList<>();
     private long fieldExec;
 
-    protected Injector injector;
-    
-    public AbstractClassIdentifier(Injector injector) {
-    	this.injector = injector;
-    }
-    
     public abstract ClassElement identify();
 
     public void run() {
@@ -50,9 +44,9 @@ public abstract class AbstractClassIdentifier {
         builder.append(" identified as ").append(identified.name()).append("\n");
         int found = 0;
         for (AbstractFieldIdentifier fieldIdentifier : fieldIdentifiers) {
-           // Injector.totalFields++;
+            Injector.totalFields++;
             if (!fieldIdentifier.broken()) {
-             //   Injector.foundFields++;
+                Injector.foundFields++;
                 found++;
             }
             builder.append(fieldIdentifier.format()).append("\n");
@@ -68,9 +62,5 @@ public abstract class AbstractClassIdentifier {
 
     public boolean broken() {
         return identified == null;
-    }
-    
-    public Injector getInjector() {
-    	return injector;
     }
 }

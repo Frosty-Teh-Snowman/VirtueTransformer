@@ -1,7 +1,7 @@
 package org.virtue.bytecode.node.impl.method;
 
 import org.objectweb.asm.tree.MethodInsnNode;
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.node.impl.BasicNode;
@@ -28,7 +28,7 @@ public abstract class AbstractMethodCallNode extends BasicNode<MethodInsnNode> {
     }
 
     public ClassElement ownerClass() {
-        return VirtueTransformer.getInstance().getInjector().get(owner());
+        return Injector.get(owner());
     }
 
     public MethodElement method() {

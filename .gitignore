@@ -1,11 +1,6 @@
 ## Java
 *.class
 
-## Transformer
-obf/
-de_obf/
-decompilers
-
 ## Eclipse
 .classpath
 .project

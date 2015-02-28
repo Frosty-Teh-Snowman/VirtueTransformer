@@ -3,7 +3,7 @@ package org.virtue.bytecode.query.impl;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.virtue.VirtueTransformer;
+import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.FieldElement;
 import org.virtue.bytecode.graph.hierarchy.HierarchyBranch;
@@ -310,7 +310,7 @@ public class ClassQuery extends AbstractQuery<ClassElement, ClassQuery> {
 
     @Override
     public List<ClassElement> all() {
-        List<ClassElement> elements = filterList(VirtueTransformer.getInstance().getInjector().getElements());
+        List<ClassElement> elements = filterList(Injector.elements);
         return elements.isEmpty() ? null : elements;
     }
 

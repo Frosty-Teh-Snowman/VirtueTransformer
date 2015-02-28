@@ -8,7 +8,6 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.deobfuscation.Transformer;
@@ -17,14 +16,7 @@ import org.virtue.deobfuscation.Transformer;
  * @author : const_
  */
 public class OpaquePredicateRemovalTransformer extends Transformer {
-    /**
-	 * @param injector
-	 */
-	public OpaquePredicateRemovalTransformer(Injector injector) {
-		super(injector);
-	}
-
-	@Override
+    @Override
     public void transform(List<ClassElement> elements) {
         List<AbstractInsnNode> remove = new LinkedList<>();
         for (ClassElement element : elements) {
