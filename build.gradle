@@ -26,3 +26,33 @@ dependencies {
 	compile name: 'jode-1.1.2-pre1'
 	compile name: 'procyon-decompiler-0.5.28'
 }
+
+task obfuscate(type: JavaExec, dependsOn: classes) {
+  main = 'org.virtue.VirtueTransformer'
+  args = "-t_mode=0".split().toList()
+  classpath sourceSets.main.runtimeDir
+}
+
+task grab(type: JavaExec, dependsOn: classes) {
+  main = 'org.virtue.VirtueTransformer'
+  args = "-t_mode=1 -d_mode=0".split().toList()
+  classpath sourceSets.main.runtimeDir
+}
+
+task decrypt(type: JavaExec, dependsOn: classes) {
+  main = 'org.virtue.VirtueTransformer'
+  args = "-t_mode=2 -d_mode=0".split().toList()
+  classpath sourceSets.main.runtimeDir
+}
+
+task deobfuscate(type: JavaExec, dependsOn: classes) {
+  main = 'org.virtue.VirtueTransformer'
+  args = "-t_mode=3 -d_mode=0".split().toList()
+  classpath sourceSets.main.runtimeDir
+}
+
+task decompile(type: JavaExec, dependsOn: classes) {
+  main = 'org.virtue.VirtueTransformer'
+  args = "-t_mode=4 -d_mode=0".split().toList()
+  classpath sourceSets.main.runtimeDir
+}
