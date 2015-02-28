@@ -2,6 +2,7 @@ package org.virtue.deobfuscation.transformers;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.tree.FieldNode;
 import org.virtue.bytecode.element.ClassElement;
@@ -19,10 +20,10 @@ public class UnusedFieldRemovalTransformer extends Transformer {
 
 
     @Override
-    public void transform(List<ClassElement> elements) {
+    public void transform(Map<String, ClassElement> map) {
         final List<UsedField> used = new LinkedList<>();
         List<FieldNode> remove = new LinkedList<>();
-        for (ClassElement element : elements) {
+        for (ClassElement element : map.values()) {
             used.clear();
             for (MethodElement method : element.methods()) {
                 FlowGraph graph = method.graph();

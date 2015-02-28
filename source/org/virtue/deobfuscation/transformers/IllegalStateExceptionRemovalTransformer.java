@@ -2,6 +2,7 @@ package org.virtue.deobfuscation.transformers;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -17,9 +18,9 @@ import org.virtue.deobfuscation.Transformer;
 public class IllegalStateExceptionRemovalTransformer extends Transformer {
 
     @Override
-    public void transform(List<ClassElement> elements) {
+    public void transform(Map<String, ClassElement> map) {
         List<AbstractInsnNode> remove = new LinkedList<>();
-        for (ClassElement element : elements) {
+        for (ClassElement element : map.values()) {
             for (MethodElement method : element.methods()) {
                 for (AbstractInsnNode ain : method.instructionList()) {
                     if (ain.getOpcode() == Opcodes.NEW) {

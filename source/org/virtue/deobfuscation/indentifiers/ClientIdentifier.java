@@ -380,6 +380,7 @@ public class ClientIdentifier extends AbstractClassIdentifier {
         public FieldElement identify() {
             ClassElement loot = Injector.get(LootIdentifier.class).identified();
             ClassElement deque = Injector.get(DequeIdentifier.class).identified();
+            System.out.println(loot.name() + ", " + deque.name());
             FieldQuery query = new FieldQuery(new MethodQuery().hasCast(loot.name()).
                     hasFieldDesc("[[[L" + deque.name() + ";", false).returns("V").all());
             return query.desc("[[[L" + deque.name() + ";").first();

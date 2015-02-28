@@ -17,14 +17,14 @@ import org.virtue.bytecode.graph.hierarchy.HierarchyBranch;
 public class ClassElement {
 
     private ClassNode node;
-    private ClassReader reader;
+   // private ClassReader reader;
     private List<MethodElement> methods;
     private List<FieldElement> fields;
     private List<HierarchyBranch> branches = new LinkedList<>();
 
-    public ClassElement(ClassNode node, ClassReader reader) {
+    public ClassElement(ClassNode node/*, ClassReader reader*/) {
         this.node = node;
-        this.reader = reader;
+     //   this.reader = reader;
         fields();
         methods();
     }
@@ -174,9 +174,9 @@ public class ClassElement {
         return branches.get(0);
     }
 
-    public ClassReader reader() {
+/*    public ClassReader reader() {
         return reader;
-    }
+    }*/
 
     public ClassNode node() {
         return node;

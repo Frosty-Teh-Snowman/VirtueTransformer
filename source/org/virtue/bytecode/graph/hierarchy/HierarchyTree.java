@@ -1,5 +1,6 @@
 package org.virtue.bytecode.graph.hierarchy;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -15,7 +16,7 @@ public class HierarchyTree {
     private List<ClassElement> elements;
     private List<ClassElement> all;
 
-    public HierarchyTree(List<ClassElement> elements) {
+    public HierarchyTree(Collection<ClassElement> elements) {
         this.elements = new LinkedList<>(elements);
         this.all = new LinkedList<>(elements);
     }

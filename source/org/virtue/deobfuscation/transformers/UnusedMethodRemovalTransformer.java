@@ -3,6 +3,7 @@ package org.virtue.deobfuscation.transformers;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.tree.MethodNode;
 import org.virtue.Injector;
@@ -18,10 +19,10 @@ import org.virtue.deobfuscation.Transformer;
  */
 public class UnusedMethodRemovalTransformer extends Transformer {
     @Override
-    public void transform(List<ClassElement> elements) {
+    public void transform(Map<String, ClassElement> map) {
 
         List<EntryPoint> entries = new LinkedList<>();
-        for (ClassElement element : elements) {
+        for (ClassElement element : map.values()) {
             MethodElement method = element.findMethod("<clinit>", "()V");
             if (method != null) {
                 entries.add(new EntryPoint(method));
@@ -33,7 +34,7 @@ public class UnusedMethodRemovalTransformer extends Transformer {
         graph.build();
         List<MethodNode> remove = new LinkedList<>();
         List<MethodCall> called = graph.calls();
-        for (ClassElement element : elements) {
+        for (ClassElement element : map.values()) {
             remove.clear();
             methods:
             for (MethodElement method : element.methods()) {

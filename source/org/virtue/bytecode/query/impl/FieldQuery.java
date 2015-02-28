@@ -18,7 +18,7 @@ public class FieldQuery extends AbstractQuery<FieldElement, FieldQuery> {
     private List<FieldElement> fields = new LinkedList<>();
 
     public FieldQuery() {
-        for (ClassElement element : Injector.elements) {
+        for (ClassElement element : Injector.getContainer().getElements().values()) {
             fields.addAll(element.fields());
         }
     }

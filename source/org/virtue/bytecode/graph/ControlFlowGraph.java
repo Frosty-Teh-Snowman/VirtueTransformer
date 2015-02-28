@@ -11,6 +11,7 @@ import org.virtue.Injector;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.bytecode.graph.flow.Block;
 import org.virtue.utility.ASMUtility;
+import org.virtue.utility.ClassContainer;
 
 /**
  * @author : const_
@@ -22,7 +23,7 @@ public class ControlFlowGraph {
     private List<Block> ordered = new LinkedList<>();
 
     public static void main(String[] args) {
-        Injector.elements = ASMUtility.load(new File("./gamepack.jar"));
+        Injector.container = new ClassContainer(ASMUtility.load(new File("./gamepack.jar")));
         ControlFlowGraph graph = new ControlFlowGraph(Injector.get("client").findMethod("ho", "(III)V"));
         graph.build();
         for (int i = 0; i < graph.ordered.size(); i++) {

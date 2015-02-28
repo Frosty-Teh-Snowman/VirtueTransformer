@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
@@ -37,9 +38,9 @@ import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 public class UnusedClassRemovalTransformer extends Transformer {
 
     @Override
-    public void transform(List<ClassElement> elements) {
+    public void transform(Map<String, ClassElement> map) {
         final List<String> used = new LinkedList<>();
-        for(ClassElement element : elements) {
+        for(ClassElement element : map.values()) {
             for(MethodElement method : element.methods()) {
             	RegexInsnFinder finder = new RegexInsnFinder(method.node());
             	AbstractInsnNode[] nodes = finder.find("ICONST_0 ((LSHL)|(LSHR))");
@@ -134,7 +135,7 @@ public class UnusedClassRemovalTransformer extends Transformer {
             }
         }
         List<ClassElement> remove = new LinkedList<>();
-        for(ClassElement element : elements) {
+        for(ClassElement element : map.values()) {
             if(!used.contains(element.name())) {
                 remove.add(element);
                 add();
@@ -142,7 +143,9 @@ public class UnusedClassRemovalTransformer extends Transformer {
             }
             tAdd();
         }
-        elements.removeAll(remove);
+        for (ClassElement el : remove) {
+        	map.remove(el.name());
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.virtue.deobfuscation.transformers;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -17,9 +18,9 @@ import org.virtue.deobfuscation.Transformer;
  */
 public class OpaquePredicateRemovalTransformer extends Transformer {
     @Override
-    public void transform(List<ClassElement> elements) {
+    public void transform(Map<String, ClassElement> map) {
         List<AbstractInsnNode> remove = new LinkedList<>();
-        for (ClassElement element : elements) {
+        for (ClassElement element : map.values()) {
             for (MethodElement method : element.methods()) {
                 switch (method.desc().charAt(method.desc().indexOf(')') - 1)) {
                     case 'I':
@@ -53,7 +54,7 @@ public class OpaquePredicateRemovalTransformer extends Transformer {
                                         remove.add(varInsn.getNext());
                                     }
                                 }
-                                for (ClassElement element_ : elements) {
+                                for (ClassElement element_ : map.values()) {
                                     List<AbstractInsnNode> remove_ = new LinkedList<>();
                                     for (MethodElement method_ : element_.methods()) {
                                         if(method_.node().instructions.size() <= 0) {

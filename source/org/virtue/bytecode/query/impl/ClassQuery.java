@@ -310,7 +310,7 @@ public class ClassQuery extends AbstractQuery<ClassElement, ClassQuery> {
 
     @Override
     public List<ClassElement> all() {
-        List<ClassElement> elements = filterList(Injector.elements);
+        List<ClassElement> elements = filterList(Injector.getContainer().getElements().values());
         return elements.isEmpty() ? null : elements;
     }
 

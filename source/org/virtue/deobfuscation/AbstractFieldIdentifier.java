@@ -1,6 +1,9 @@
 package org.virtue.deobfuscation;
 
+import org.virtue.Injector;
 import org.virtue.bytecode.element.FieldElement;
+import org.virtue.utility.refactor.FieldMappingData;
+import org.virtue.utility.refactor.MappingData;
 
 /**
  * @author : const_
@@ -13,6 +16,8 @@ public abstract class AbstractFieldIdentifier {
 
     public void run() {
         identified = identify();
+        if (!broken())
+        	Injector.getContainer().getHookMap().addField(new FieldMappingData(identified.parent().name(), new MappingData(getClass().getSimpleName().substring(0, getClass().getSimpleName().indexOf("Identifier"))), identified.desc(), identified.member()));
     }
 
     public FieldElement identified() {

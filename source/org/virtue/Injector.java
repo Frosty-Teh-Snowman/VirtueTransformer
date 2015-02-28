@@ -46,7 +46,11 @@ import org.virtue.deobfuscation.indentifiers.scene.object.WallObjectIdentifier;
 import org.virtue.deobfuscation.transformers.ArithmeticStatementOrderTransformer;
 import org.virtue.deobfuscation.transformers.IllegalStateExceptionRemovalTransformer;
 import org.virtue.deobfuscation.transformers.UnusedClassRemovalTransformer;
+import org.virtue.deobfuscation.transformers.refactor.ClassNameTransformer;
+import org.virtue.deobfuscation.transformers.refactor.FieldNameTransformer;
+import org.virtue.deobfuscation.transformers.refactor.MethodNameTransformer;
 import org.virtue.utility.ASMUtility;
+import org.virtue.utility.ClassContainer;
 import org.virtue.utility.Timer;
 
 public class Injector {
@@ -56,35 +60,42 @@ public class Injector {
 	 */
 	private static Logger logger = LoggerFactory.getLogger(Injector.class);
 	
-    public static List<ClassElement> elements;
+	public static ClassContainer container;
+    //public static List<ClassElement> elements;
     public static HierarchyTree hierarchyTree;
     public static List<AbstractClassIdentifier> classIdentifiers;
     public static List<Transformer> transformers;
 
     public static int totalFields, foundFields;
 
-    public static void deobfuscate(String[] args) {
+    public static void deobfuscate(String dypt, String deob, String ref) {
         Timer timer = new Timer();
         transformers = new LinkedList<>();
         initTransofmers();
         classIdentifiers = new LinkedList<>();
         initIdentifiers();
         timer.start();
-        elements = ASMUtility.load(new File(args[0]));
-        logger.info("Loaded " + elements.size() + " Class(es) in " + timer.clock() + "ms");
+       // elements = ASMUtility.load(new File(args[0]));
+        container = new ClassContainer(ASMUtility.load(new File(dypt)));
+        logger.info("Loaded " + container.getElements().size() + " Class(es) in " + timer.clock() + "ms");
         for (Transformer transform : transformers) {
-            transform.execute(elements);
+            transform.execute(container.getElements());
             System.out.println(transform.result());
         }
-        ASMUtility.save(new File(args[1]), elements);
-        elements = ASMUtility.load(new File(args[1]));
+        container.refactor();
+        ASMUtility.save(new File(deob), container.getElements().values());
+        container = new ClassContainer(ASMUtility.load(new File(deob)));
         timer.start();
-        hierarchyTree = new HierarchyTree(elements);
+        hierarchyTree = new HierarchyTree(container.getElements().values());
         hierarchyTree.build();
        // System.out.println(hierarchyTree.toString());
         timer.start();
         for (AbstractClassIdentifier ident : classIdentifiers) {
-            ident.run();
+            try {
+            	ident.run();
+            } catch (Exception e) {
+            	logger.error("Error Identifiying " + ident.getClass().getSimpleName(), e);
+            }
         }
         long finish = timer.clock();
         timer.start();
@@ -99,6 +110,8 @@ public class Injector {
             }
             System.out.println(ident.format());
         }
+        container.refactor();
+        ASMUtility.save(new File(ref), container.getElements().values());
         logger.info("Named " + found + " out of " + classIdentifiers.size() + " Class(es) in " + finish + "ms.");
         logger.info("Named " + foundFields + " out of " + totalFields + " Field(s) in " + fieldsFinish + "ms.");
     }
@@ -111,6 +124,9 @@ public class Injector {
         transformers.add(new ArithmeticStatementOrderTransformer());
         //   TRANSFORMS.add(new OpaquePredicateRemovalTransform());
         //TRANSFORMS.add(new ControlFlowTransform());
+    	transformers.add(new ClassNameTransformer());
+    	transformers.add(new MethodNameTransformer());
+    	transformers.add(new FieldNameTransformer());
     }
 
     private static void initIdentifiers() {
@@ -150,6 +166,13 @@ public class Injector {
         classIdentifiers.add(new FacadeIdentifier());
     }
     
+	/**
+	 * @return
+	 */
+	public static ClassContainer getContainer() {
+		return container;
+	}
+    
     @SuppressWarnings("unchecked")
 	public static <T extends AbstractClassIdentifier>  T get(Class<T> clazz) {
         for(AbstractClassIdentifier identifier : classIdentifiers) {
@@ -161,7 +184,7 @@ public class Injector {
     }
 
     public static ClassElement get(String name) {
-        for (ClassElement element : elements) {
+        for (ClassElement element : container.getElements().values()) {
             if (element.name().equals(name)) {
                 return element;
             }

@@ -133,7 +133,7 @@ public class VirtueTransformer {
 		this.transform_mode = TransformMode.GRAB;
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
-		this.directory = "./build/transformer/de_obf/oldschool/73/";
+		this.directory = "./build/transformer/de_obf/local/";
 		this.crawler = new ConfigCrawler();
 		//this.injector = new Injector();
 		this.decompiler = new BytecodeDecompiler();
@@ -254,9 +254,9 @@ public class VirtueTransformer {
 			case DEOBFUSCATE:
 				
 				if (getGameMode().equals(GameMode.OLDSCHOOL))
-					Injector.deobfuscate(new String[] { getDirectory() + "gamepack.jar", getDirectory() + "deobfuscated.jar" });
+					Injector.deobfuscate(getDirectory() + "gamepack.jar", getDirectory() + "deobfuscated.jar", getDirectory() + "refactored.jar" );
 				else
-					Injector.deobfuscate(new String[] { getDirectory() + "decrypted.jar", getDirectory() + "deobfuscated.jar" });
+					Injector.deobfuscate(getDirectory() + "decrypted.jar", getDirectory() + "deobfuscated.jar", getDirectory() + "refactored.jar" );
 				/*if (getGameMode().equals(GameMode.OLDSCHOOL))
 					getInjector().initialization(getDirectory() + "gamepack.jar");
 				else

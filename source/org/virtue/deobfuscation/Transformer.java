@@ -1,6 +1,7 @@
 package org.virtue.deobfuscation;
 
 import java.util.List;
+import java.util.Map;
 
 import org.virtue.bytecode.element.ClassElement;
 
@@ -13,13 +14,13 @@ public abstract class Transformer {
     private int total;
     private long exec;
 
-    public void execute(List<ClassElement> elements) {
+    public void execute(Map<String, ClassElement> map) {
         long start = System.currentTimeMillis();
-        transform(elements);
+        transform(map);
         exec = System.currentTimeMillis() - start;
     }
 
-    public abstract void transform(List<ClassElement> elements);
+    public abstract void transform(Map<String, ClassElement> map);
 
     public String name() {
         return getClass().getSimpleName().substring(0, getClass().getSimpleName().indexOf("Transform"));

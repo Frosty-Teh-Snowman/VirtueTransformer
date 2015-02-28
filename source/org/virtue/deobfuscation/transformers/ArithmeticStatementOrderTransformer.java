@@ -1,6 +1,7 @@
 package org.virtue.deobfuscation.transformers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -15,8 +16,8 @@ import org.virtue.deobfuscation.Transformer;
 public class ArithmeticStatementOrderTransformer extends Transformer {
 
     @Override
-    public void transform(List<ClassElement> elements) {
-        for (ClassElement element : elements) {
+    public void transform(Map<String, ClassElement> map) {
+        for (ClassElement element : map.values()) {
             for (MethodElement method : element.methods()) {
                 for (AbstractInsnNode ain : method.instructionList()) {
                     switch (ain.getOpcode()) {

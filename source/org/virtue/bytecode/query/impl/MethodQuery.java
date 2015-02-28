@@ -19,7 +19,7 @@ public class MethodQuery extends AbstractQuery<MethodElement, MethodQuery> {
 
     public MethodQuery() {
         methods = new LinkedList<>();
-        for (ClassElement element : Injector.elements) {
+        for (ClassElement element : Injector.getContainer().getElements().values()) {
             methods.addAll(element.methods());
         }
     }

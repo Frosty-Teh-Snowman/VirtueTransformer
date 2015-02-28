@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +94,7 @@ public class ASMUtility {
         return desc.replaceAll("L", "").replaceAll(";", "").replaceAll("\\[", "");
     }
 
-    public static void save(File jar, final List<ClassElement> nodes) {
+    public static void save(File jar, final Collection<ClassElement> nodes) {
         try {
             try (final JarOutputStream output = new JarOutputStream(new FileOutputStream(jar))) {
                 for (ClassElement element : nodes) {
@@ -120,10 +121,11 @@ public class ASMUtility {
                     ClassReader reader = new ClassReader(jar.getInputStream(next));
                     ClassNode node = new ClassNode();
                     reader.accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                    ClassElement element = new ClassElement(node, reader);
+                    ClassElement element = new ClassElement(node/*, reader*/);
                     list.add(element);
                 }
             }
+            jar.close();
             return list;
         } catch (IOException e) {
             e.printStackTrace();

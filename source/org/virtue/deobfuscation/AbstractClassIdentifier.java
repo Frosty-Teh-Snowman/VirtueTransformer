@@ -6,6 +6,7 @@ import java.util.List;
 import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.utility.Timer;
+import org.virtue.utility.refactor.ClassMappingData;
 
 /**
  * @author : const_
@@ -20,6 +21,8 @@ public abstract class AbstractClassIdentifier {
 
     public void run() {
         identified = identify();
+        if (!broken())
+        	Injector.getContainer().getHookMap().addClass(new ClassMappingData(identified.name(), getClass().getSimpleName().substring(0, getClass().getSimpleName().indexOf("Identifier"))));
     }
 
     public void add(AbstractFieldIdentifier fieldIdentifier) {
