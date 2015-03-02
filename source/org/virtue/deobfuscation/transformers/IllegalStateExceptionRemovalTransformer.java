@@ -76,7 +76,7 @@ public class IllegalStateExceptionRemovalTransformer extends Transformer {
     public String result() {
         StringBuilder builder = new StringBuilder("\t\t\tExecuted ");
         builder.append(name()).append(" in ").append(exec()).append("ms\n\t\t\t\tRemoved ")
-                .append(counter()).append(" twigs");
+                .append(counter()).append(" illegal state(s)");
         return builder.toString();
     }
 }

@@ -19,23 +19,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.virtue.gamepack.cryption;
+package org.virtue.rscd;
+
 
 /**
- * @author Major
  * @author Kyle Friz
+ * @since Mar 1, 2015
  */
-public class CryptionConstants {
-
+public enum CacheMode {
+	
 	/**
-	 * The size of the buffer used when decrypting the {@code inner.pack.gz}
-	 * archive, in bytes.
+	 * Represents downloading the cache will be skipped
 	 */
-	public static final int BUFFER_SIZE = 0x500000;
-
+	SKIP,
+	
 	/**
-	 * The name of the archive containing the client.
+	 * Represents the last downloaded cache will be copied and updated
 	 */
-	public static final String ENCRYPTED_ARCHIVE_NAME = "inner.pack.gz";
-
+	UPDATE_PREVIOUS,
+	
+	/**
+	 * Represents a the cache will be downloaded from scratch
+	 */
+	FULL_UPDATE;
+	
+	/**
+	 * Grabs the mode for the specified value
+	 * 
+	 * @param val
+	 *            The value
+	 * @return The mode
+	 */
+	public static CacheMode valueOf(int val) {
+		switch (val) {
+		case 0:
+			return SKIP;
+		case 1:
+			return UPDATE_PREVIOUS;
+		case 2:
+			return FULL_UPDATE;
+		}
+		return null;
+	}
+	
 }

@@ -62,6 +62,10 @@ public abstract class AbstractClassIdentifier {
     public ClassElement identified() {
         return identified;
     }
+    
+    public List<AbstractFieldIdentifier> fields() {
+    	return fieldIdentifiers;
+    }
 
     public boolean broken() {
         return identified == null;

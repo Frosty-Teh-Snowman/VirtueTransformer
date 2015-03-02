@@ -7,7 +7,6 @@ import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.MethodElement;
 import org.virtue.deobfuscation.Transformer;
-import org.virtue.utility.refactor.ClassMappingData;
 import org.virtue.utility.refactor.MappingData;
 import org.virtue.utility.refactor.MethodMappingData;
 
@@ -23,10 +22,6 @@ public class MethodNameTransformer extends Transformer {
         		tAdd();
         		continue;
         	}
-        	if ((element.node().access & Opcodes.ACC_NATIVE) != 0) {
-        		tAdd();
-        		continue;
-        	}
         	
         	for (MethodElement method : element.methods()) {
         		if ((method.node().access & Opcodes.ACC_NATIVE) != 0) {
@@ -34,8 +29,13 @@ public class MethodNameTransformer extends Transformer {
         			continue elementLoop;
         		}
             	
+				if (method.name().equals("main") && method.name().equals("<init>") && method.name().equals("<clinit>")) {
+					tAdd();
+					continue elementLoop;
+				}
+        		
             	add();
-            	Injector.getContainer().getHookMap().addMethod(new MethodMappingData(element.name(), new MappingData(method.name(), "Method_" + counter()), method.desc(), method.member()));
+            	Injector.getContainer().getHookMap().addMethod(new MethodMappingData(element.name(), new MappingData(method.name(), "Method_" + counter()), method.desc(), !method.member()));
         	}
         }
     }

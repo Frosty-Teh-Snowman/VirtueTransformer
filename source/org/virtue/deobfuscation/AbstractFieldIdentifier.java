@@ -17,7 +17,7 @@ public abstract class AbstractFieldIdentifier {
     public void run() {
         identified = identify();
         if (!broken())
-        	Injector.getContainer().getHookMap().addField(new FieldMappingData(identified.parent().name(), new MappingData(getClass().getSimpleName().substring(0, getClass().getSimpleName().indexOf("Identifier"))), identified.desc(), identified.member()));
+        	Injector.getContainer().getHookMap().addField(new FieldMappingData(identified.parent().name(), new MappingData(String.valueOf(getClass().getSimpleName().charAt(0)).toLowerCase() + getClass().getSimpleName().substring(1)), identified.desc(), !identified.member()));
     }
 
     public FieldElement identified() {

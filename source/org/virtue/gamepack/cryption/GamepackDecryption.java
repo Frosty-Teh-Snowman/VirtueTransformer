@@ -48,6 +48,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.Constants;
 import org.virtue.VirtueTransformer;
 
 /**
@@ -103,7 +104,7 @@ public class GamepackDecryption {
 		this.encodedVector = vector;
 		this.jar = new JarFile(VirtueTransformer.getInstance().getDirectory() + "gamepack.jar");
 
-		ZipEntry archive = jar.getEntry(CryptionConstants.ENCRYPTED_ARCHIVE_NAME);
+		ZipEntry archive = jar.getEntry(Constants.ENCRYPTED_ARCHIVE_NAME);
 		this.input = new BufferedInputStream(jar.getInputStream(archive));
 	}
 
@@ -141,7 +142,7 @@ public class GamepackDecryption {
 		/* Initialize the cipher. */
 		cipher.init(Cipher.DECRYPT_MODE, secret, vector);
 
-		byte[] buffer = new byte[CryptionConstants.BUFFER_SIZE];
+		byte[] buffer = new byte[Constants.BUFFER_SIZE];
 		int read = 0, in = 0;
 
 		while (read < buffer.length && (in = input.read(buffer, read, buffer.length - read)) != -1) {
@@ -150,7 +151,7 @@ public class GamepackDecryption {
 
 		/* Decrypts the inner.pack.gz file. */
 		byte[] decrypted = cipher.doFinal(buffer, 0, read);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(CryptionConstants.BUFFER_SIZE);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(Constants.BUFFER_SIZE);
 
 		/*
 		 * Un-gzips and unpacks the jar file contained in the archive, and

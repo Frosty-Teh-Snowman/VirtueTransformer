@@ -23,9 +23,15 @@ package org.virtue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -40,6 +46,9 @@ import org.virtue.gamepack.ConfigCrawler;
 import org.virtue.gamepack.JS5Worker;
 import org.virtue.gamepack.cryption.GamepackDecryption;
 import org.virtue.gamepack.cryption.GamepackEncryption;
+import org.virtue.rscd.CacheDownloader;
+import org.virtue.rscd.CacheMode;
+import org.virtue.utility.Timer;
 
 /**
  * @author Kyle Friz
@@ -51,7 +60,7 @@ public class VirtueTransformer {
 	 * The {@link Logger} instance
 	 */
 	private static Logger logger = LoggerFactory.getLogger(VirtueTransformer.class);
-
+	
 	/**
 	 * The instance of the transformer
 	 */
@@ -86,6 +95,11 @@ public class VirtueTransformer {
 	 * The current decompile mode
 	 */
 	private DecompileMode decompile_mode;
+	
+	/**
+	 * The current cache mode
+	 */
+	private CacheMode cache_mode;
 
 	/**
 	 * The injector
@@ -128,14 +142,21 @@ public class VirtueTransformer {
 	 * The Gamepack encryptor
 	 */
 	private GamepackEncryption g_encrypt;
+	
+	/**
+	 * The Cache Downloader
+	 */
+	private CacheDownloader c_downloader;
 
 	public VirtueTransformer() {
 		this.transform_mode = TransformMode.GRAB;
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
-		this.directory = "./build/transformer/de_obf/local/";
+		this.cache_mode = CacheMode.SKIP;
+		this.directory = "./build/transformer/de_obf/rs3/837/";
 		this.crawler = new ConfigCrawler();
 		//this.injector = new Injector();
+		this.c_downloader = new CacheDownloader();
 		this.decompiler = new BytecodeDecompiler();
 		this.startTime = System.currentTimeMillis();
 		this.running = true;
@@ -167,6 +188,7 @@ public class VirtueTransformer {
 		 * -t_mode= sets the transformation mode (Which stage should the program start at) Default: GRAB
 		 * -g_mode= sets the game mode (Oldschool or Runescape3) Default: OLDSCHOOL
 		 * -d_mode= sets the decompile mode (Which decompiler should the program use) Default: JODE
+		 * -c_mode= sets the cache mode (Skip, Update, Full Download) Default: SKIP
 		 * -secret= sets the secret key for decrypting the gamepack (Only used when not grabbing the current rs gamepack)
 		 * -vector= sets the initialization vector for dercypting the gamepack (Only used when not grabbing the current rs gamepack)
 		 */
@@ -177,6 +199,8 @@ public class VirtueTransformer {
 				instance.setGameMode(GameMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-d_mode")) {
 				instance.setDecompileMode(DecompileMode.valueOf(Integer.parseInt(option.substring(8))));
+			} else if (option.startsWith("-c_mode")) {
+				instance.setCacheMode(CacheMode.valueOf(Integer.parseInt(option.substring(8))));
 			} else if (option.startsWith("-secret")) {
 				instance.setSecret(option.substring(8));
 			} else if (option.startsWith("-vector")) {
@@ -280,12 +304,53 @@ public class VirtueTransformer {
 			case DECOMPILE:
 
 				try {
-				//	 getDecompiler().decompile(getDirectory() + "deobfuscated.jar", getDirectory() + "source/");
+					 getDecompiler().decompile(getDirectory() + "deobfuscated.jar", getDirectory() + "source/");
 				} catch (Exception e) {
 					logger.error("Error Decompiling!", e);
 				}
 
 				/* TODO: Decompile a jar */
+				setTransformMode(TransformMode.CACHE);
+				break;
+			case CACHE:
+				
+				if (!getCacheMode().equals(CacheMode.SKIP)) {
+					if (getCacheMode().equals(CacheMode.UPDATE_PREVIOUS)) {
+						Path path = null;
+						int rev;
+						if (getGameMode().equals(GameMode.RUNESCAPE3)) {
+							rev = Integer.parseInt(getDirectory().split("./build/transformer/de_obf/rs3/")[1].replace("/", "")) - 1;
+						} else {
+							rev = Integer.parseInt(getDirectory().split("./build/transformer/de_obf/oldschool/")[1].replace("/", "")) - 1;
+						}
+						while (path == null) {
+							if (getGameMode().equals(GameMode.RUNESCAPE3)) {
+								path = Paths.get(getDirectory().split("rs3/")[0]).resolve("rs3/" + rev-- + "/cache/");
+							} else {
+								path = Paths.get(getDirectory().split("oldschool/")[0]).resolve("oldschool/" + rev-- + "/cache/");
+							}
+							
+							if (!path.toFile().exists() && !path.toFile().isDirectory())
+								path = null;
+							
+						}
+						try {
+					        Timer timer = new Timer();
+							timer.start();
+							Files.createDirectory(Paths.get(getDirectory()).resolve("cache/"));
+							for (String file : path.toFile().list()) {
+								Files.createFile(Paths.get(getDirectory()).resolve("cache/").resolve(file));
+								Files.copy(path.resolve(file), Paths.get(getDirectory()).resolve("cache/").resolve(file), StandardCopyOption.REPLACE_EXISTING);
+							}
+							System.out.println(TimeUnit.MILLISECONDS.toSeconds(timer.clock()) + " Seconds");
+						} catch (IOException e) {
+							logger.error("Error Copying Cache!", e);
+						}
+						c_downloader.run();
+					}
+				}
+				
+				/* TODO: Download the cache */
 				setTransformMode(TransformMode.FINALIZE);
 				break;
 			case FINALIZE:
@@ -374,6 +439,20 @@ public class VirtueTransformer {
 	public void setInjector(Injector injector) {
 		this.injector = injector;
 	}*/
+
+	/**
+	 * @return the cache_mode
+	 */
+	public CacheMode getCacheMode() {
+		return cache_mode;
+	}
+
+	/**
+	 * @param cache_mode the cache_mode to set
+	 */
+	public void setCacheMode(CacheMode cache_mode) {
+		this.cache_mode = cache_mode;
+	}
 
 	/**
 	 * @return the crawler
@@ -499,5 +578,19 @@ public class VirtueTransformer {
 	 */
 	public void setGamepackEncryption(GamepackEncryption g_encrypt) {
 		this.g_encrypt = g_encrypt;
+	}
+
+	/**
+	 * @return the c_downloader
+	 */
+	public CacheDownloader getCacheDownloader() {
+		return c_downloader;
+	}
+
+	/**
+	 * @param c_downloader the c_downloader to set
+	 */
+	public void setCacheDownloader(CacheDownloader c_downloader) {
+		this.c_downloader = c_downloader;
 	}
 }

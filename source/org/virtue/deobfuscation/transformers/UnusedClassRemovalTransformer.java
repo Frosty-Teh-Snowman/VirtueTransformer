@@ -152,8 +152,8 @@ public class UnusedClassRemovalTransformer extends Transformer {
     public String result() {
         StringBuilder builder = new StringBuilder("\t\t\tExecuted ");
         builder.append(name()).append(" in ").append(exec()).append("ms\n\t\t\t\tRemoved ")
-                .append(counter()).append(" sour lemons : kept ").append(total() - counter())
-                .append(" lemons.");
+                .append(counter()).append(" class(es) : kept ").append(total() - counter())
+                .append(" class(es).");
         return builder.toString();
     }
 }

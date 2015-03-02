@@ -1,8 +1,10 @@
 package org.virtue;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,10 @@ import org.virtue.deobfuscation.indentifiers.scene.object.GroundObjectIdentifier
 import org.virtue.deobfuscation.indentifiers.scene.object.WallObjectIdentifier;
 import org.virtue.deobfuscation.transformers.ArithmeticStatementOrderTransformer;
 import org.virtue.deobfuscation.transformers.IllegalStateExceptionRemovalTransformer;
+import org.virtue.deobfuscation.transformers.OpaquePredicateRemovalTransformer;
 import org.virtue.deobfuscation.transformers.UnusedClassRemovalTransformer;
+import org.virtue.deobfuscation.transformers.UnusedFieldRemovalTransformer;
+import org.virtue.deobfuscation.transformers.UnusedMethodRemovalTransformer;
 import org.virtue.deobfuscation.transformers.refactor.ClassNameTransformer;
 import org.virtue.deobfuscation.transformers.refactor.FieldNameTransformer;
 import org.virtue.deobfuscation.transformers.refactor.MethodNameTransformer;
@@ -64,13 +69,13 @@ public class Injector {
     //public static List<ClassElement> elements;
     public static HierarchyTree hierarchyTree;
     public static List<AbstractClassIdentifier> classIdentifiers;
-    public static List<Transformer> transformers;
+    public static Map<Integer, Transformer[]> transformers;
 
     public static int totalFields, foundFields;
 
     public static void deobfuscate(String dypt, String deob, String ref) {
         Timer timer = new Timer();
-        transformers = new LinkedList<>();
+        transformers = new HashMap<>();
         initTransofmers();
         classIdentifiers = new LinkedList<>();
         initIdentifiers();
@@ -78,7 +83,7 @@ public class Injector {
        // elements = ASMUtility.load(new File(args[0]));
         container = new ClassContainer(ASMUtility.load(new File(dypt)));
         logger.info("Loaded " + container.getElements().size() + " Class(es) in " + timer.clock() + "ms");
-        for (Transformer transform : transformers) {
+        for (Transformer transform : transformers.get(1)) {
             transform.execute(container.getElements());
             System.out.println(transform.result());
         }
@@ -111,22 +116,33 @@ public class Injector {
             System.out.println(ident.format());
         }
         container.refactor();
+        for (Transformer transform : transformers.get(2)) {
+            transform.execute(container.getElements());
+            System.out.println(transform.result());
+        }
+        container.refactor();
         ASMUtility.save(new File(ref), container.getElements().values());
         logger.info("Named " + found + " out of " + classIdentifiers.size() + " Class(es) in " + finish + "ms.");
         logger.info("Named " + foundFields + " out of " + totalFields + " Field(s) in " + fieldsFinish + "ms.");
     }
     
     private static void initTransofmers() {
-        transformers.add(new IllegalStateExceptionRemovalTransformer());
-     //   TRANSFORMS.add(new UnusedFieldRemovalTransform());
-        transformers.add(new UnusedClassRemovalTransformer());
-        // TRANSFORMS.add(new UnusedMethodRemovalTransform());
-        transformers.add(new ArithmeticStatementOrderTransformer());
-        //   TRANSFORMS.add(new OpaquePredicateRemovalTransform());
-        //TRANSFORMS.add(new ControlFlowTransform());
-    	transformers.add(new ClassNameTransformer());
-    	transformers.add(new MethodNameTransformer());
-    	transformers.add(new FieldNameTransformer());
+    	/** Phase 1 */
+		transformers.put(1, new Transformer[] { 
+				new IllegalStateExceptionRemovalTransformer(),
+				//new UnusedFieldRemovalTransformer(), 
+				new UnusedClassRemovalTransformer(),
+				//new UnusedMethodRemovalTransformer(), 
+				new ArithmeticStatementOrderTransformer()
+				//new OpaquePredicateRemovalTransformer()
+		});
+		
+		/** Phase 2 */
+		transformers.put(2, new Transformer[] {
+		    	new ClassNameTransformer(),
+		    	new MethodNameTransformer()
+		    	//new FieldNameTransformer()
+		});
     }
 
     private static void initIdentifiers() {

@@ -6,9 +6,9 @@ import org.objectweb.asm.Opcodes;
 import org.virtue.Injector;
 import org.virtue.bytecode.element.ClassElement;
 import org.virtue.bytecode.element.FieldElement;
-import org.virtue.bytecode.element.MethodElement;
+import org.virtue.deobfuscation.AbstractClassIdentifier;
+import org.virtue.deobfuscation.AbstractFieldIdentifier;
 import org.virtue.deobfuscation.Transformer;
-import org.virtue.utility.refactor.ClassMappingData;
 import org.virtue.utility.refactor.FieldMappingData;
 import org.virtue.utility.refactor.MappingData;
 
@@ -24,17 +24,27 @@ public class FieldNameTransformer extends Transformer {
         		tAdd();
         		continue;
         	}
-        	if ((element.node().access & Opcodes.ACC_NATIVE) != 0) {
-        		tAdd();
-        		continue;
-        	}
         	
         	for (FieldElement field : element.fields()) {
         		if ((field.node().access & Opcodes.ACC_NATIVE) != 0) {
         			tAdd();
         			continue elementLoop;
         		}
-        		//System.out.println(element.name() + ", " + field.name() + ", " + field.desc());
+        		
+       			if (element.name().equals("di") || element.name().equalsIgnoreCase("Stream")) {
+       				System.out.println(field.name());
+       			}
+        		
+        		
+               	for (AbstractClassIdentifier c_ident : Injector.classIdentifiers) {
+               		for (AbstractFieldIdentifier f_ident : c_ident.fields()) {	
+	               		if (!f_ident.broken() && f_ident.identified().name().equals(field.name())) {
+	               			tAdd();
+	               			continue elementLoop;
+	               		}
+               		}
+            	}
+
             	add();
               	Injector.getContainer().getHookMap().addField(new FieldMappingData(element.name(), new MappingData(field.name(), "Field_" + counter()), field.desc(), ((field.access() & Opcodes.ACC_STATIC) != 0)));
         	}

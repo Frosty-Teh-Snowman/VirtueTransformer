@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Virtue Studios
+ * Copyright (c) 2015 Virtue Studios
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,73 +21,28 @@
  */
 package org.virtue;
 
+
 /**
- * 
  * @author Kyle Friz
- * @since Feb 20, 2015
+ * @since Mar 1, 2015
  */
-public enum TransformMode {
-
-	/**
-	 * Represents the mode of obfuscating bytecode
-	 */
-	OBFUSCATE,
-
-	/**
-	 * Represents the mode of grabbing the gamepack from the web
-	 */
-	GRAB,
-
-	/**
-	 * Represents the mode of decrypting AES Pack200 archives
-	 */
-	DECRYPT,
-
-	/**
-	 * Represents the mode of deobfuscating bytecode
-	 */
-	DEOBFUSCATE,
-
-	/**
-	 * Represents the mode of decompiling bytecode
-	 */
-	DECOMPILE,
+public class Constants {
 	
+	public static final int OSRS_MAJOR_VERSION = 74;
+	public static final int RS3_MAJOR_VERSION = 837;
+	public static final int MINOR_VERSION = 1;
+	public static final int WORLD = 2;
+    public static final int LOBBY = 2;
+    
 	/**
-	 * Represents the mode of downloading the cache
+	 * The size of the buffer used when decrypting the {@code inner.pack.gz}
+	 * archive, in bytes.
 	 */
-	CACHE,
+	public static final int BUFFER_SIZE = 0x500000;
 
 	/**
-	 * Represents the mode of finalizing
+	 * The name of the archive containing the client.
 	 */
-	FINALIZE;
-
-	/**
-	 * Grabs the mode for the specified value
-	 * 
-	 * @param val
-	 *            The value
-	 * @return The mode
-	 */
-	public static TransformMode valueOf(int val) {
-		switch (val) {
-		case 0:
-			return OBFUSCATE;
-		case 1:
-			return GRAB;
-		case 2:
-			return DECRYPT;
-		case 3:
-			return DEOBFUSCATE;
-		case 4:
-			return DECOMPILE;
-		case 5:
-			return CACHE;
-		case 6:
-			return FINALIZE;
-		}
-		return null;
-	}
-
+	public static final String ENCRYPTED_ARCHIVE_NAME = "inner.pack.gz";
+	
 }

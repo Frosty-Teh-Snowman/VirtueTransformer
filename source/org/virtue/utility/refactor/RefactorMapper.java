@@ -49,7 +49,6 @@ public class RefactorMapper extends Remapper {
 
     @Override
     public String mapFieldName(String owner, String name, String desc) {
-    	//System.out.println("Map: " + owner + ", " + name + ", " + desc);
         String obfKey = owner + "$$$$" + name + "$$$$" + desc;
         if (sortedFields.containsKey(obfKey))
             name = sortedFields.get(obfKey).getName().getRefactoredName();

@@ -76,8 +76,8 @@ public class UnusedMethodRemovalTransformer extends Transformer {
     public String result() {
         StringBuilder builder = new StringBuilder("\t\t\tExecuted ");
         builder.append(name()).append(" in ").append(exec()).append("ms\n\t\t\t\tRemoved ")
-                .append(counter()).append(" unused lemon branches : kept ").append(total() - counter())
-                .append(" branches.");
+                .append(counter()).append(" unused method(s) : kept ").append(total() - counter())
+                .append(" method(s).");
         return builder.toString();
     }
 }

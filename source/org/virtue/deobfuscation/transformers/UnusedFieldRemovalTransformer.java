@@ -56,8 +56,8 @@ public class UnusedFieldRemovalTransformer extends Transformer {
     public String result() {
         StringBuilder builder = new StringBuilder("\t\t\tExecuted ");
         builder.append(name()).append(" in ").append(exec()).append("ms\n\t\t\t\tRemoved ")
-                .append(counter()).append(" unused lemon seeds : kept ").append(total() - counter())
-                .append(" seeds.");
+                .append(counter()).append(" unused field(s) : kept ").append(total() - counter())
+                .append(" field(s).");
         return builder.toString();
     }
 

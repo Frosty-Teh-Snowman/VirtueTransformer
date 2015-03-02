@@ -99,7 +99,7 @@ public class ArithmeticStatementOrderTransformer extends Transformer {
     public String result() {
         StringBuilder builder = new StringBuilder("\t\t\tExecuted ");
         builder.append(name()).append(" in ").append(exec()).append("ms\n\t\t\t\tRearranged ")
-                .append(counter()).append(" roots.");
+                .append(counter()).append(" statement(s).");
         return builder.toString();
     }
 }

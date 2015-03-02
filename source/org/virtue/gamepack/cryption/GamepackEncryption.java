@@ -50,6 +50,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.virtue.Constants;
 
 /**
  * @author Kyle Friz
@@ -75,7 +76,7 @@ public class GamepackEncryption {
 	 *             If the path to the gamepack is invalid.
 	 */
 	public GamepackEncryption() throws IOException {
-		this.input = new BufferedInputStream(new FileInputStream("./obf/obfuscated.jar/"));
+		this.input = new BufferedInputStream(new FileInputStream("./build/transformer/obf/obfuscated.jar/"));
 	}
 
 	/**
@@ -122,14 +123,14 @@ public class GamepackEncryption {
 		/* Initialize the cipher. */
 		cipher.init(Cipher.ENCRYPT_MODE, secret, vector);
 
-		byte[] buffer = new byte[CryptionConstants.BUFFER_SIZE];
+		byte[] buffer = new byte[Constants.BUFFER_SIZE];
 		int read = 0, in = 0;
 
 		while (read < buffer.length && (in = input.read(buffer, read, buffer.length - read)) != -1) {
 			read += in;
 		}
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(CryptionConstants.BUFFER_SIZE);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(Constants.BUFFER_SIZE);
 
 		/* Packs and GZIPs the jar file, and writes the compressed data out. */
 		try (JarInputStream jis = new JarInputStream(new ByteArrayInputStream(buffer));
@@ -140,7 +141,7 @@ public class GamepackEncryption {
 		/* Encrypts the compressed file. */
 		byte[] encrypted = cipher.doFinal(bos.toByteArray());
 
-		File file = new File("./obf/inner.pack.gz");
+		File file = new File("./build/transformer/obf/", Constants.ENCRYPTED_ARCHIVE_NAME);
 		if (!file.exists())
 			file.createNewFile();
 
