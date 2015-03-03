@@ -30,7 +30,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
@@ -153,7 +152,7 @@ public class VirtueTransformer {
 		this.game_mode = GameMode.OLDSCHOOL;
 		this.decompile_mode = DecompileMode.JODE;
 		this.cache_mode = CacheMode.SKIP;
-		this.directory = "./build/transformer/de_obf/rs3/837/";
+		this.directory = "./build/transformer/de_obf/oldschool/74/";
 		this.crawler = new ConfigCrawler();
 		//this.injector = new Injector();
 		this.c_downloader = new CacheDownloader();
@@ -346,7 +345,18 @@ public class VirtueTransformer {
 						} catch (IOException e) {
 							logger.error("Error Copying Cache!", e);
 						}
-						c_downloader.run();
+					} else {
+						try {
+							Files.createDirectory(Paths.get(getDirectory()).resolve("cache/"));
+						} catch (IOException e) {
+							logger.error("Error creating Cache!", e);
+						}
+					}
+					c_downloader.run();
+					try {
+						c_downloader.close();
+					} catch (IOException e) {
+						logger.error("Error Closing Cache Downloader!", e);
 					}
 				}
 				

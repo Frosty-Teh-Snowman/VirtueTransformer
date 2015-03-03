@@ -1,5 +1,6 @@
 package org.virtue.rscd.cache;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -7,7 +8,7 @@ import java.nio.channels.FileChannel;
 /**
  * Manages the reading and writing for a particular file store in the cache.
  */
-public class FileStore {
+public class FileStore implements Closeable {
 
 	private static final int IDX_BLOCK_LEN = 6;
 	private static final int HEADER_LEN = 8;
@@ -37,6 +38,16 @@ public class FileStore {
 		this.maxSize = maxSize;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
+	@Override
+	public void close() throws IOException {
+		dataChannel.close();
+		indexChannel.close();
+	}
+	
 	/**
 	 * Gets the number of files stored in this file store.
 	 * @return This file store's file count.

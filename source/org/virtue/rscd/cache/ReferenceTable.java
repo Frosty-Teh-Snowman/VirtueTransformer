@@ -1,8 +1,9 @@
 package org.virtue.rscd.cache;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
+import org.virtue.GameMode;
+import org.virtue.VirtueTransformer;
 import org.virtue.rscd.utility.Whirlpool;
 
 /**
@@ -17,8 +18,13 @@ public class ReferenceTable {
 
 		private int index;
 		private int identifier;
+		private int files;
+		private int size;
 		private int crc;
 		private int version;
+		private int v;
+		private int v1;
+		private int v2;
 		private int childCount;
 		private int[] childIndices;
 		private int childIndexCount;
@@ -32,6 +38,14 @@ public class ReferenceTable {
 		public int getIdentifier() {
 			return identifier;
 		}
+		
+		public int getFiles() {
+			return files;
+		}
+		
+		public int getSize() {
+			return size;
+		}
 
 		public int getCRC() {
 			return crc;
@@ -39,6 +53,18 @@ public class ReferenceTable {
 
 		public int getVersion() {
 			return version;
+		}
+		
+		public int getV() {
+			return v;
+		}
+		
+		public int getV1() {
+			return v1;
+		}
+		
+		public int getV2() {
+			return v2;
 		}
 
 		public int getChildCount() {
@@ -73,19 +99,25 @@ public class ReferenceTable {
 	 */
 	public ReferenceTable(ByteBuffer buffer) {
 		buffer.position(5);
-		entryCount = buffer.get() & 0xff;
+		
+		if (VirtueTransformer.getInstance().getGameMode().equals(GameMode.RUNESCAPE3)) {
+			entryCount = buffer.get() & 0xff;
+		} else {
+			entryCount = 16;
+		}
 		entries = new Entry[entryCount];
 
-        //System.out.println("#,crc,version,files,size");
 		for (int i = 0; i < entryCount; i++) {
 			Entry entry = entries[i] = new Entry();
 			entry.crc = buffer.getInt();
 			entry.version = buffer.getInt();
-            int files = buffer.getInt();
-            int size = buffer.getInt();
-			entry.digest = new byte[64];
-			buffer.get(entry.digest);
-            //System.out.println(i + ":" + entry.crc + "," + entry.version + "," + files + "," + size);
+			
+			if (VirtueTransformer.getInstance().getGameMode().equals(GameMode.RUNESCAPE3)) {
+				entry.files = buffer.getInt();
+				entry.size = buffer.getInt();
+				entry.digest = new byte[64];
+				buffer.get(entry.digest);
+			}
 		}
 
         // not all of the version table is read here - there is still an RSA-encrypted
@@ -106,11 +138,13 @@ public class ReferenceTable {
 			if (entry.crc != crc) {
 				throw new RuntimeException("CRC mismatch: " + index + "," + crc + "," + entry.crc);
 			}
-			byte[] expected = entry.digest;
-			byte[] digest = Whirlpool.whirlpool(buffer.array(), 0, buffer.capacity());
-            for (int i = 0; i < 64; i++) {
-                if (digest[i] != expected[i]) {
-					throw new RuntimeException("Digest mismatch " + index);
+			if (VirtueTransformer.getInstance().getGameMode().equals(GameMode.RUNESCAPE3)) {
+				byte[] expected = entry.digest;
+				byte[] digest = Whirlpool.whirlpool(buffer.array(), 0, buffer.capacity());
+				for (int i = 0; i < 64; i++) {
+					if (digest[i] != expected[i]) {
+						throw new RuntimeException("Digest mismatch " + index);
+					}
 				}
 			}
 		}
@@ -174,7 +208,7 @@ public class ReferenceTable {
 
         if (flag8) {
             for (int i = 0; i < entryCount; i++) {
-                int v = buffer.getInt();
+                entries[i].v = buffer.getInt();
             }
         }
 
@@ -188,8 +222,8 @@ public class ReferenceTable {
 
         if (flag4) {
             for (int i = 0; i < entryCount; i++) {
-                int v1 = buffer.getInt();
-                int v2 = buffer.getInt();
+            	entries[i].v1 = buffer.getInt();
+            	entries[i].v2 = buffer.getInt();
             }
         }
 

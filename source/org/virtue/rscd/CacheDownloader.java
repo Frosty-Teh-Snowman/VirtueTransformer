@@ -1,5 +1,6 @@
 package org.virtue.rscd;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -13,16 +14,18 @@ import org.virtue.rscd.cache.FileStore;
 import org.virtue.rscd.cache.ReferenceTable;
 import org.virtue.rscd.network.FileRequest;
 import org.virtue.rscd.network.HttpWorker;
-import org.virtue.rscd.network.Js5Worker;
+import org.virtue.rscd.network.JS5Worker;
+import org.virtue.rscd.network.workers.OSRSWorker;
+import org.virtue.rscd.network.workers.RS3Worker;
 import org.virtue.rscd.utility.Crawler;
 import org.virtue.rscd.utility.Whirlpool;
 
 /**
  * Coordinates downloading and saving of the cache from the server.
  */
-public class CacheDownloader {
+public class CacheDownloader implements Closeable {
 
-	private Js5Worker js5Worker;
+	private JS5Worker js5Worker;
     private HttpWorker httpWorker;
 	private ReferenceTable versionTable;
 	private ReferenceTable[] tables;
@@ -34,7 +37,6 @@ public class CacheDownloader {
 	 * Creates a new CacheDownloader object.
 	 */
 	public CacheDownloader() {
-		js5Worker = new Js5Worker();
         httpWorker = new HttpWorker("lobby" + Constants.LOBBY + ".runescape.com");
 	}
 
@@ -57,6 +59,7 @@ public class CacheDownloader {
 	 */
 	private void connect() {
         if (VirtueTransformer.getInstance().getGameMode().equals(GameMode.RUNESCAPE3)) {
+        	js5Worker = new RS3Worker();
             String key = Crawler.extractParameter(Crawler.downloadPage("http://world" + Constants.WORLD + ".runescape.com/g=runescape/,j0"), 32);
             if (key == null) {
                 System.err.println("Couldn't find valid handshake key.");
@@ -64,9 +67,10 @@ public class CacheDownloader {
             }
         	js5Worker.connect("world" + Constants.WORLD + ".runescape.com", Constants.RS3_MAJOR_VERSION, Constants.MINOR_VERSION, key);
         } else {
+        	js5Worker = new OSRSWorker();
         	js5Worker.connect("oldschool" + Constants.WORLD + ".runescape.com", Constants.OSRS_MAJOR_VERSION, Constants.MINOR_VERSION, "");
         }
-		while (js5Worker.getState() != Js5Worker.State.CONNECTED) {
+		while (js5Worker.getState() != JS5Worker.State.CONNECTED) {
 			js5Worker.process();
 		}
 		System.out.println("Successful connection");
@@ -277,6 +281,7 @@ public class CacheDownloader {
 	 * Initializes the cache indices.
 	 * @param count The number of indices
 	 */
+	@SuppressWarnings("resource")
 	private void initCacheIndices(int count) {
 		try {
 			RandomAccessFile dataFile = new RandomAccessFile(VirtueTransformer.getInstance().getDirectory() + "/cache/main_file_cache.dat2", "rw");
@@ -291,6 +296,17 @@ public class CacheDownloader {
 
 		} catch (IOException ioex) {
 			ioex.printStackTrace();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
+	@Override
+	public void close() throws IOException {
+		reference.close();
+		for (FileStore store : stores) {
+			store.close();
 		}
 	}
 

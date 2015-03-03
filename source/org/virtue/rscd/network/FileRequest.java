@@ -24,10 +24,18 @@ public class FileRequest {
 	}
 
 	/**
-	 * Gets the hash of the index/archive of this FileRequest.
+	 * Gets the hash of the index/archive of this FileRequest. OSRS
 	 * @return The hash of the index/archive of this FileRequest.
 	 */
-	public long hash() {
+	public long hashOS() {
+		return ((long) index << 16) | file;
+	}
+	
+	/**
+	 * Gets the hash of the index/archive of this FileRequest. RS3
+	 * @return The hash of the index/archive of this FileRequest.
+	 */
+	public long hash3() {
 		return ((long) index << 32) | file;
 	}
 
